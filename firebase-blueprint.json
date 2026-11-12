@@ -1,0 +1,399 @@
+{
+  "entities": {
+    "Organization": {
+      "title": "Organization",
+      "description": "Commercial entity (Tenant)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "plan": { "type": "string", "enum": ["IGREJA", "MULTI"] },
+        "owner_id": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "active": { "type": "boolean" },
+        "lgpd_consent_version": { "type": "string" },
+        "max_members": { "type": "number" },
+        "pipeline_stages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" },
+              "color": { "type": "string" },
+              "border": { "type": "string" },
+              "iconName": { "type": "string" },
+              "automation": { "type": "string" }
+            },
+            "required": ["id", "label", "color", "border"]
+          }
+        }
+      },
+      "required": ["id", "name", "plan", "owner_id", "created_at", "active"]
+    },
+    "SystemUser": {
+      "title": "SystemUser",
+      "description": "User profile with role and organization",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "role": { "type": "string" },
+        "org_id": { "type": "string" },
+        "church_id": { "type": "string" },
+        "duty": { "type": "string" },
+        "permissions": { "type": "array", "items": { "type": "string" } },
+        "lgpd_consent_date": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "email", "role", "org_id"]
+    },
+    "Church": {
+      "title": "Church",
+      "description": "A church unit within an organization",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "org_id": { "type": "string" },
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "org_id", "name", "created_at"]
+    },
+    "Member": {
+      "title": "Member",
+      "description": "Contact person in the church pipeline",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "org_id": { "type": "string" },
+        "church_id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "stage": { "type": "string" },
+        "engagement_score": { "type": "number" },
+        "registration_date": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "org_id", "church_id", "name", "stage", "registration_date"]
+    },
+    "ScheduleEvent": {
+      "title": "ScheduleEvent",
+      "description": "Calendar event",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "org_id": { "type": "string" },
+        "church_id": { "type": "string" },
+        "title": { "type": "string" },
+        "start_date": { "type": "string", "format": "date-time" },
+        "end_date": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "org_id", "church_id", "title", "start_date", "end_date"]
+    },
+    "DiscipleshipTrack": {
+      "title": "DiscipleshipTrack",
+      "description": "Structured spiritual growth and leadership training track",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "org_id": { "type": "string" },
+        "church_id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "active": { "type": "boolean" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "org_id", "church_id", "title", "category", "active"]
+    },
+    "MemberTrackProgress": {
+      "title": "MemberTrackProgress",
+      "description": "Tracks an individual member's enrollment and progress in a discipleship track",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "org_id": { "type": "string" },
+        "church_id": { "type": "string" },
+        "member_id": { "type": "string" },
+        "track_id": { "type": "string" },
+        "status": { "type": "string" },
+        "progress_percent": { "type": "number" },
+        "started_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "org_id", "church_id", "member_id", "track_id", "status"]
+    },
+    "MessageLog": {
+      "title": "MessageLog",
+      "description": "Audit log of WhatsApp and campaign messages dispatched to contacts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "org_id": { "type": "string" },
+        "church_id": { "type": "string" },
+        "member_id": { "type": "string" },
+        "member_name": { "type": "string" },
+        "member_phone": { "type": "string" },
+        "channel": { "type": "string" },
+        "campaign_id": { "type": "string" },
+        "campaign_name": { "type": "string" },
+        "message_text": { "type": "string" },
+        "sent_by_id": { "type": "string" },
+        "sent_by_name": { "type": "string" },
+        "sent_at": { "type": "string", "format": "date-time" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "org_id", "church_id", "member_id", "member_name", "channel", "message_text", "sent_at", "status"]
+    },
+    "BroadcastCampaign": {
+      "title": "BroadcastCampaign",
+      "description": "Segmented bulk WhatsApp broadcast campaign",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "org_id": { "type": "string" },
+        "church_id": { "type": "string" },
+        "title": { "type": "string" },
+        "segment_label": { "type": "string" },
+        "template_text": { "type": "string" },
+        "total_recipients": { "type": "number" },
+        "sent_count": { "type": "number" },
+        "created_by_name": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "org_id", "church_id", "title", "template_text", "total_recipients", "sent_count", "created_at"]
+    },
+    "Ministry": {
+      "title": "Ministry",
+      "description": "Church service department or volunteer team",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "org_id": { "type": "string" },
+        "church_id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "leader_id": { "type": "string" },
+        "active": { "type": "boolean" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "org_id", "church_id", "name", "active", "created_at"]
+    },
+    "MinistrySchedule": {
+      "title": "MinistrySchedule",
+      "description": "Service roster and volunteer assignments for a ministry event",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "org_id": { "type": "string" },
+        "church_id": { "type": "string" },
+        "ministry_id": { "type": "string" },
+        "ministry_name": { "type": "string" },
+        "event_title": { "type": "string" },
+        "service_date": { "type": "string", "format": "date-time" },
+        "start_time": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "org_id", "church_id", "ministry_id", "ministry_name", "event_title", "service_date", "start_time", "created_at"]
+    },
+    "ServiceCheckin": {
+      "title": "ServiceCheckin",
+      "description": "Worship service attendance and Koinonya Kids safe check-in/check-out records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "org_id": { "type": "string" },
+        "church_id": { "type": "string" },
+        "event_id": { "type": "string" },
+        "event_title": { "type": "string" },
+        "service_date": { "type": "string", "format": "date-time" },
+        "checkin_type": { "type": "string", "enum": ["SERVICE", "KIDS", "EVENT"] },
+        "person_id": { "type": "string" },
+        "person_name": { "type": "string" },
+        "kids_room": { "type": "string" },
+        "guardian_name": { "type": "string" },
+        "security_code": { "type": "string" },
+        "status": { "type": "string", "enum": ["CHECKED_IN", "CHECKED_OUT"] },
+        "checked_in_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "org_id", "church_id", "event_title", "service_date", "checkin_type", "person_name", "status", "checked_in_at"]
+    },
+    "PrayerRequest": {
+      "title": "PrayerRequest",
+      "description": "Church member and visitor prayer requests with privacy and status workflow",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "org_id": { "type": "string" },
+        "church_id": { "type": "string" },
+        "member_id": { "type": "string" },
+        "requester_name": { "type": "string" },
+        "requester_phone": { "type": "string" },
+        "category": { "type": "string", "enum": ["HEALTH", "FAMILY", "FINANCE", "SPIRITUAL", "THANKSGIVING", "OTHER"] },
+        "urgency": { "type": "string", "enum": ["NORMAL", "URGENT"] },
+        "privacy": { "type": "string", "enum": ["PUBLIC_CHURCH", "LEADERS_ONLY", "PASTOR_CONFIDENTIAL"] },
+        "request_text": { "type": "string" },
+        "status": { "type": "string", "enum": ["RECEIVED", "IN_PRAYER", "ANSWERED"] },
+        "prayer_count": { "type": "number" },
+        "source": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "org_id", "church_id", "requester_name", "category", "urgency", "privacy", "request_text", "status", "created_at"]
+    },
+    "PastoralVisit": {
+      "title": "PastoralVisit",
+      "description": "Scheduled and completed pastoral care visits, hospital calls, and counseling sessions",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "org_id": { "type": "string" },
+        "church_id": { "type": "string" },
+        "member_id": { "type": "string" },
+        "member_name": { "type": "string" },
+        "visit_type": { "type": "string", "enum": ["HOME_VISIT", "HOSPITAL", "COUNSELING", "CALL", "NEW_CONVERT"] },
+        "scheduled_date": { "type": "string", "format": "date-time" },
+        "responsible_id": { "type": "string" },
+        "status": { "type": "string", "enum": ["SCHEDULED", "COMPLETED", "CANCELED"] },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "org_id", "church_id", "member_name", "visit_type", "scheduled_date", "status", "created_at"]
+    },
+    "SaaSInvoice": {
+      "title": "SaaSInvoice",
+      "description": "Recurring SaaS subscription invoice for tenant organizations",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "org_id": { "type": "string" },
+        "org_name": { "type": "string" },
+        "amount": { "type": "number" },
+        "due_date": { "type": "string", "format": "date-time" },
+        "paid_at": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["PENDING", "PAID", "OVERDUE", "CANCELED"] },
+        "payment_method": { "type": "string", "enum": ["PIX", "BOLETO", "CARD", "TRANSFER"] },
+        "reference_month": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "org_id", "org_name", "amount", "due_date", "status", "payment_method", "reference_month", "created_at"]
+    },
+    "ChurchEvent": {
+      "title": "ChurchEvent",
+      "description": "Special church event open for member and public registration",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "org_id": { "type": "string" },
+        "church_id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string", "enum": ["CONFERENCE", "RETREAT", "BAPTISM", "COURSE", "WORKSHOP", "SPECIAL_SERVICE"] },
+        "start_date": { "type": "string", "format": "date-time" },
+        "start_time": { "type": "string" },
+        "location": { "type": "string" },
+        "capacity": { "type": "number" },
+        "registration_fee": { "type": "number" },
+        "allow_public_registration": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["OPEN", "FULL", "CLOSED", "COMPLETED"] },
+        "active": { "type": "boolean" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "org_id", "church_id", "title", "category", "start_date", "capacity", "registration_fee", "allow_public_registration", "status", "active", "created_at"]
+    },
+    "EventRegistration": {
+      "title": "EventRegistration",
+      "description": "Participant registration and digital ticket for a church event",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "org_id": { "type": "string" },
+        "church_id": { "type": "string" },
+        "event_id": { "type": "string" },
+        "event_title": { "type": "string" },
+        "member_id": { "type": "string" },
+        "participant_name": { "type": "string" },
+        "participant_phone": { "type": "string" },
+        "participant_email": { "type": "string" },
+        "ticket_code": { "type": "string" },
+        "payment_status": { "type": "string", "enum": ["FREE", "PENDING", "PAID"] },
+        "amount_paid": { "type": "number" },
+        "status": { "type": "string", "enum": ["CONFIRMED", "CHECKED_IN", "CANCELED"] },
+        "source": { "type": "string", "enum": ["PUBLIC_PORTAL", "MANUAL"] },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "org_id", "church_id", "event_id", "event_title", "participant_name", "participant_phone", "ticket_code", "payment_status", "status", "source", "created_at"]
+    }
+  },
+  "firestore": {
+    "/organizations/{orgId}": {
+      "schema": "Organization",
+      "description": "Tenant data"
+    },
+    "/users/{userId}": {
+      "schema": "SystemUser",
+      "description": "User profile"
+    },
+    "/churches/{churchId}": {
+      "schema": "Church",
+      "description": "Church entities"
+    },
+    "/members/{memberId}": {
+      "schema": "Member",
+      "description": "Contact data"
+    },
+    "/events/{eventId}": {
+      "schema": "ScheduleEvent",
+      "description": "Calendar data"
+    },
+    "/discipleship_tracks/{trackId}": {
+      "schema": "DiscipleshipTrack",
+      "description": "Discipleship tracks partitioned by org_id"
+    },
+    "/member_track_progress/{progressId}": {
+      "schema": "MemberTrackProgress",
+      "description": "Member discipleship progress records"
+    },
+    "/message_logs/{logId}": {
+      "schema": "MessageLog",
+      "description": "Message dispatch history linked to members and campaigns"
+    },
+    "/broadcast_campaigns/{campaignId}": {
+      "schema": "BroadcastCampaign",
+      "description": "Segmented WhatsApp bulk broadcast campaigns"
+    },
+    "/ministries/{ministryId}": {
+      "schema": "Ministry",
+      "description": "Volunteer ministries and service teams partitioned by org_id"
+    },
+    "/ministry_schedules/{scheduleId}": {
+      "schema": "MinistrySchedule",
+      "description": "Ministry volunteer service rosters partitioned by org_id"
+    },
+    "/service_checkins/{checkinId}": {
+      "schema": "ServiceCheckin",
+      "description": "Service attendance and Koinonya Kids safe check-in records partitioned by org_id"
+    },
+    "/prayer_requests/{requestId}": {
+      "schema": "PrayerRequest",
+      "description": "Prayer requests and intercession tracking partitioned by org_id"
+    },
+    "/pastoral_visits/{visitId}": {
+      "schema": "PastoralVisit",
+      "description": "Pastoral visits and counseling records partitioned by org_id"
+    },
+    "/saas_invoices/{invoiceId}": {
+      "schema": "SaaSInvoice",
+      "description": "SaaS subscription billing invoices partitioned by org_id"
+    },
+    "/church_events/{eventId}": {
+      "schema": "ChurchEvent",
+      "description": "Church conferences, baptisms, retreats and courses partitioned by org_id"
+    },
+    "/event_registrations/{regId}": {
+      "schema": "EventRegistration",
+      "description": "Event participant registrations and tickets partitioned by org_id"
+    }
+  }
+}
+

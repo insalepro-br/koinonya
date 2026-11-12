@@ -1,0 +1,422 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Catch-all: default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() { return request.auth != null; }
+    
+    match /test/connection {
+      allow read: if true;
+    }
+
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    function hasUserData() {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isSuperAdmin() {
+      return hasUserData() && getUserData().role == 'SUPER_ADMIN';
+    }
+
+    function isOrgAdmin(orgId) {
+      return hasUserData() && getUserData().org_id == orgId && (getUserData().role == 'ADMIN' || getUserData().role == 'PASTOR');
+    }
+
+    function isUserInOrg(orgId) {
+      return hasUserData() && getUserData().org_id == orgId;
+    }
+
+    function hasAcceptedLGPD() {
+      return hasUserData() && ('lgpd_consent_date' in getUserData()) && getUserData().lgpd_consent_date != null;
+    }
+
+    // --- Validations ---
+    function isValidOrganization(data) {
+      return data.keys().hasAll(['id', 'name', 'plan', 'created_at', 'active']) 
+             && data.name is string && data.name.size() < 100
+             && data.plan in ['IGREJA', 'MULTI', 'ENTERPRISE']
+             && data.active is bool;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['id', 'name', 'email', 'role', 'org_id'])
+             && data.email is string && data.email.size() < 128
+             && data.role is string && data.role.size() <= 64
+             && data.org_id is string;
+    }
+
+    function isValidMember(data) {
+      return data.keys().hasAll(['id', 'org_id', 'church_id', 'name', 'stage', 'registration_date'])
+             && data.name is string && data.name.size() <= 128
+             && data.org_id is string && data.org_id.size() <= 128
+             && data.church_id is string && data.church_id.size() <= 128;
+    }
+
+    function isValidVisitorCheckin(data) {
+      return data.keys().hasAll(['id', 'org_id', 'church_id', 'name', 'phone', 'stage', 'channel', 'registration_date'])
+             && data.name is string && data.name.size() >= 2 && data.name.size() <= 128
+             && data.phone is string && data.phone.size() >= 8 && data.phone.size() <= 32
+             && data.channel in ['QR_CODE', 'CHECKIN_PUBLIC', 'WEBSITE', 'MANUAL']
+             && data.stage is string && data.stage.size() <= 64;
+    }
+
+    function isValidMessageLog(data) {
+      return data.keys().hasAll(['id', 'org_id', 'church_id', 'member_id', 'member_name', 'channel', 'message_text', 'sent_at', 'status'])
+             && data.id is string && data.id.size() <= 128
+             && data.org_id is string && data.org_id.size() <= 128
+             && data.church_id is string && data.church_id.size() <= 128
+             && data.member_id is string && data.member_id.size() <= 128
+             && data.member_name is string && data.member_name.size() <= 160
+             && data.channel in ['WHATSAPP', 'BULK_CAMPAIGN', 'AUTOMATION_RULE']
+             && data.message_text is string && data.message_text.size() >= 1 && data.message_text.size() <= 4000
+             && data.status in ['SENT', 'OPENED_WA', 'FAILED'];
+    }
+
+    function isValidBroadcastCampaign(data) {
+      return data.keys().hasAll(['id', 'org_id', 'church_id', 'title', 'template_text', 'total_recipients', 'sent_count', 'created_at'])
+             && data.id is string && data.id.size() <= 128
+             && data.org_id is string && data.org_id.size() <= 128
+             && data.church_id is string && data.church_id.size() <= 128
+             && data.title is string && data.title.size() >= 1 && data.title.size() <= 160
+             && data.template_text is string && data.template_text.size() >= 1 && data.template_text.size() <= 4000
+             && data.total_recipients is number && data.sent_count is number;
+    }
+
+    function isValidMinistry(data) {
+      return data.keys().hasAll(['id', 'org_id', 'church_id', 'name', 'active', 'created_at'])
+             && data.id is string && data.id.size() <= 128
+             && data.org_id is string && data.org_id.size() <= 128
+             && data.church_id is string && data.church_id.size() <= 128
+             && data.name is string && data.name.size() >= 1 && data.name.size() <= 120
+             && data.active is bool;
+    }
+
+    function isValidMinistrySchedule(data) {
+      return data.keys().hasAll(['id', 'org_id', 'church_id', 'ministry_id', 'ministry_name', 'event_title', 'service_date', 'start_time', 'created_at'])
+             && data.id is string && data.id.size() <= 128
+             && data.org_id is string && data.org_id.size() <= 128
+             && data.church_id is string && data.church_id.size() <= 128
+             && data.ministry_id is string && data.ministry_id.size() <= 128
+             && data.ministry_name is string && data.ministry_name.size() <= 160
+             && data.event_title is string && data.event_title.size() >= 1 && data.event_title.size() <= 160
+             && data.start_time is string && data.start_time.size() <= 20;
+    }
+
+    function isValidServiceCheckin(data) {
+      return data.keys().hasAll(['id', 'org_id', 'church_id', 'event_title', 'service_date', 'checkin_type', 'person_name', 'status', 'checked_in_at'])
+             && data.id is string && data.id.size() <= 128
+             && data.org_id is string && data.org_id.size() <= 128
+             && data.church_id is string && data.church_id.size() <= 128
+             && data.event_title is string && data.event_title.size() >= 1 && data.event_title.size() <= 160
+             && data.person_name is string && data.person_name.size() >= 1 && data.person_name.size() <= 160
+             && data.checkin_type in ['SERVICE', 'KIDS', 'EVENT']
+             && data.status in ['CHECKED_IN', 'CHECKED_OUT'];
+    }
+
+    function isValidPrayerRequest(data) {
+      return data.keys().hasAll(['id', 'org_id', 'church_id', 'requester_name', 'category', 'urgency', 'privacy', 'request_text', 'status', 'created_at'])
+             && data.id is string && data.id.size() <= 128
+             && data.org_id is string && data.org_id.size() <= 128
+             && data.church_id is string && data.church_id.size() <= 128
+             && data.requester_name is string && data.requester_name.size() >= 1 && data.requester_name.size() <= 160
+             && data.request_text is string && data.request_text.size() >= 1 && data.request_text.size() <= 3000
+             && data.category in ['HEALTH', 'FAMILY', 'FINANCE', 'SPIRITUAL', 'THANKSGIVING', 'OTHER']
+             && data.urgency in ['NORMAL', 'URGENT']
+             && data.privacy in ['PUBLIC_CHURCH', 'LEADERS_ONLY', 'PASTOR_CONFIDENTIAL']
+             && data.status in ['RECEIVED', 'IN_PRAYER', 'ANSWERED'];
+    }
+
+    function isValidPublicPrayerSubmission(data) {
+      return isValidPrayerRequest(data)
+             && data.source == 'QR_CODE'
+             && data.status == 'RECEIVED'
+             && data.prayer_count == 0;
+    }
+
+    function isValidPastoralVisit(data) {
+      return data.keys().hasAll(['id', 'org_id', 'church_id', 'member_name', 'visit_type', 'scheduled_date', 'status', 'created_at'])
+             && data.id is string && data.id.size() <= 128
+             && data.org_id is string && data.org_id.size() <= 128
+             && data.church_id is string && data.church_id.size() <= 128
+             && data.member_name is string && data.member_name.size() >= 1 && data.member_name.size() <= 160
+             && data.visit_type in ['HOME_VISIT', 'HOSPITAL', 'COUNSELING', 'CALL', 'NEW_CONVERT']
+             && data.status in ['SCHEDULED', 'COMPLETED', 'CANCELED'];
+    }
+
+    function isValidSaaSInvoice(data) {
+      return data.keys().hasAll(['id', 'org_id', 'org_name', 'amount', 'due_date', 'status', 'payment_method', 'reference_month', 'created_at'])
+             && data.id is string && data.id.size() <= 128
+             && data.org_id is string && data.org_id.size() <= 128
+             && data.org_name is string && data.org_name.size() >= 1 && data.org_name.size() <= 160
+             && data.amount is number && data.amount >= 0
+             && data.status in ['PENDING', 'PAID', 'OVERDUE', 'CANCELED']
+             && data.payment_method in ['PIX', 'BOLETO', 'CARD', 'TRANSFER']
+             && data.reference_month is string && data.reference_month.size() >= 4 && data.reference_month.size() <= 20;
+    }
+
+    function isValidChurchEvent(data) {
+      return data.keys().hasAll(['id', 'org_id', 'church_id', 'title', 'category', 'start_date', 'capacity', 'registration_fee', 'allow_public_registration', 'status', 'active', 'created_at'])
+             && data.id is string && data.id.size() <= 128
+             && data.org_id is string && data.org_id.size() <= 128
+             && data.church_id is string && data.church_id.size() <= 128
+             && data.title is string && data.title.size() >= 1 && data.title.size() <= 160
+             && data.category in ['CONFERENCE', 'RETREAT', 'BAPTISM', 'COURSE', 'WORKSHOP', 'SPECIAL_SERVICE']
+             && data.capacity is number && data.capacity >= 1
+             && data.registration_fee is number && data.registration_fee >= 0
+             && data.allow_public_registration is bool
+             && data.status in ['OPEN', 'FULL', 'CLOSED', 'COMPLETED']
+             && data.active is bool;
+    }
+
+    function isValidEventRegistration(data) {
+      return data.keys().hasAll(['id', 'org_id', 'church_id', 'event_id', 'event_title', 'participant_name', 'participant_phone', 'ticket_code', 'payment_status', 'status', 'source', 'created_at'])
+             && data.id is string && data.id.size() <= 128
+             && data.org_id is string && data.org_id.size() <= 128
+             && data.church_id is string && data.church_id.size() <= 128
+             && data.event_id is string && data.event_id.size() <= 128
+             && data.event_title is string && data.event_title.size() >= 1 && data.event_title.size() <= 160
+             && data.participant_name is string && data.participant_name.size() >= 2 && data.participant_name.size() <= 160
+             && data.participant_phone is string && data.participant_phone.size() >= 6 && data.participant_phone.size() <= 32
+             && data.ticket_code is string && data.ticket_code.size() >= 4 && data.ticket_code.size() <= 40
+             && data.payment_status in ['FREE', 'PENDING', 'PAID']
+             && data.status in ['CONFIRMED', 'CHECKED_IN', 'CANCELED']
+             && data.source in ['PUBLIC_PORTAL', 'MANUAL'];
+    }
+
+    function isValidPublicEventRegistration(data) {
+      return isValidEventRegistration(data)
+             && data.source == 'PUBLIC_PORTAL'
+             && data.status == 'CONFIRMED'
+             && data.payment_status in ['FREE', 'PENDING'];
+    }
+
+    // --- Matches ---
+
+    match /organizations/{orgId} {
+      allow list: if isSuperAdmin();
+      allow get: if isSignedIn() && isValidId(orgId) && (
+        isUserInOrg(orgId) ||
+        isSuperAdmin() ||
+        (existing() != null && existing().owner_id == request.auth.uid)
+      );
+      allow create: if isSignedIn() && isValidId(orgId) && isValidOrganization(incoming()) && (
+        incoming().owner_id == request.auth.uid ||
+        isSuperAdmin()
+      );
+      allow update: if isSignedIn() && isValidId(orgId) && existing() != null && isValidOrganization(incoming()) && (
+        isSuperAdmin() ||
+        (
+          isOrgAdmin(orgId) &&
+          !incoming().diff(existing()).affectedKeys().hasAny([
+            'subscription_status',
+            'plan',
+            'monthly_price',
+            'max_members',
+            'billing_cycle',
+            'active',
+            'owner_id'
+          ])
+        )
+      );
+      allow delete: if isSuperAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && (
+        request.auth.uid == userId ||
+        isSuperAdmin() ||
+        (existing() != null && isUserInOrg(existing().org_id))
+      );
+      allow create: if isSignedIn() && isValidId(userId) && isValidUser(incoming()) && (
+        request.auth.uid == userId ||
+        isOrgAdmin(incoming().org_id) ||
+        isSuperAdmin()
+      );
+      allow update: if isSignedIn() && isValidId(userId) && existing() != null && (
+        (request.auth.uid == userId && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'whatsapp', 'avatar', 'duty', 'lgpd_consent_date', 'status'])) ||
+        (isOrgAdmin(existing().org_id) && incoming().org_id == existing().org_id) ||
+        isSuperAdmin()
+      );
+      allow delete: if isSignedIn() && isValidId(userId) && (
+        existing() != null && (isOrgAdmin(existing().org_id) || isSuperAdmin())
+      );
+    }
+
+    match /churches/{churchId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidId(churchId) && (isOrgAdmin(incoming().org_id) || isSuperAdmin());
+      allow update: if isSignedIn() && isValidId(churchId) && existing() != null && (isOrgAdmin(existing().org_id) || isSuperAdmin()) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(churchId) && existing() != null && (isOrgAdmin(existing().org_id) || isSuperAdmin());
+    }
+
+    match /members/{memberId} {
+      allow read: if isSignedIn() && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isValidId(memberId) && (
+        (isSignedIn() && isUserInOrg(incoming().org_id) && isValidMember(incoming()))
+        || isValidVisitorCheckin(incoming())
+      );
+      allow update: if isSignedIn() && isValidId(memberId) && existing() != null && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(memberId) && existing() != null && (isOrgAdmin(existing().org_id) || isSuperAdmin());
+    }
+
+    match /events/{eventId} {
+      allow read: if isSignedIn() && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isSignedIn() && isValidId(eventId) && isUserInOrg(incoming().org_id);
+      allow update: if isSignedIn() && isValidId(eventId) && existing() != null && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(eventId) && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+    }
+
+    match /cells/{cellId} {
+      allow read: if isSignedIn() && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isSignedIn() && isValidId(cellId) && isUserInOrg(incoming().org_id);
+      allow update: if isSignedIn() && isValidId(cellId) && existing() != null && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(cellId) && existing() != null && (isOrgAdmin(existing().org_id) || isSuperAdmin());
+    }
+
+    match /cell_meetings/{meetingId} {
+      allow read: if isSignedIn() && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isSignedIn() && isValidId(meetingId) && isUserInOrg(incoming().org_id);
+      allow update: if isSignedIn() && isValidId(meetingId) && existing() != null && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(meetingId) && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+    }
+
+    match /automation_rules/{ruleId} {
+      allow read: if isSignedIn() && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isSignedIn() && isValidId(ruleId) && isUserInOrg(incoming().org_id);
+      allow update: if isSignedIn() && isValidId(ruleId) && existing() != null && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(ruleId) && existing() != null && (isOrgAdmin(existing().org_id) || isSuperAdmin());
+    }
+
+    match /financial_transactions/{txId} {
+      allow read: if isSignedIn() && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isSignedIn() && isValidId(txId) && isUserInOrg(incoming().org_id);
+      allow update: if isSignedIn() && isValidId(txId) && existing() != null && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(txId) && existing() != null && (isOrgAdmin(existing().org_id) || isSuperAdmin());
+    }
+
+    match /financial_campaigns/{campId} {
+      allow read: if isSignedIn() && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isSignedIn() && isValidId(campId) && isUserInOrg(incoming().org_id);
+      allow update: if isSignedIn() && isValidId(campId) && existing() != null && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(campId) && existing() != null && (isOrgAdmin(existing().org_id) || isSuperAdmin());
+    }
+
+    match /discipleship_tracks/{trackId} {
+      allow read: if isSignedIn() && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isSignedIn() && isValidId(trackId) && isUserInOrg(incoming().org_id);
+      allow update: if isSignedIn() && isValidId(trackId) && existing() != null && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(trackId) && existing() != null && (isOrgAdmin(existing().org_id) || isSuperAdmin());
+    }
+
+    match /member_track_progress/{progressId} {
+      allow read: if isSignedIn() && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isSignedIn() && isValidId(progressId) && isUserInOrg(incoming().org_id);
+      allow update: if isSignedIn() && isValidId(progressId) && existing() != null && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(progressId) && existing() != null && (isOrgAdmin(existing().org_id) || isSuperAdmin());
+    }
+
+    match /message_logs/{logId} {
+      allow list: if isSignedIn() && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow get: if isSignedIn() && isValidId(logId) && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isSignedIn() && isValidId(logId) && isValidMessageLog(incoming()) && (isUserInOrg(incoming().org_id) || isSuperAdmin());
+      allow update: if isSignedIn() && isValidId(logId) && existing() != null && isValidMessageLog(incoming()) && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(logId) && existing() != null && (isOrgAdmin(existing().org_id) || isSuperAdmin());
+    }
+
+    match /broadcast_campaigns/{campaignId} {
+      allow list: if isSignedIn() && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow get: if isSignedIn() && isValidId(campaignId) && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isSignedIn() && isValidId(campaignId) && isValidBroadcastCampaign(incoming()) && (isUserInOrg(incoming().org_id) || isSuperAdmin());
+      allow update: if isSignedIn() && isValidId(campaignId) && existing() != null && isValidBroadcastCampaign(incoming()) && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(campaignId) && existing() != null && (isOrgAdmin(existing().org_id) || isSuperAdmin());
+    }
+
+    match /ministries/{ministryId} {
+      allow list: if isSignedIn() && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow get: if isSignedIn() && isValidId(ministryId) && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isSignedIn() && isValidId(ministryId) && isValidMinistry(incoming()) && (isUserInOrg(incoming().org_id) || isSuperAdmin());
+      allow update: if isSignedIn() && isValidId(ministryId) && existing() != null && isValidMinistry(incoming()) && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(ministryId) && existing() != null && (isOrgAdmin(existing().org_id) || isSuperAdmin());
+    }
+
+    match /ministry_schedules/{scheduleId} {
+      allow list: if isSignedIn() && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow get: if isSignedIn() && isValidId(scheduleId) && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isSignedIn() && isValidId(scheduleId) && isValidMinistrySchedule(incoming()) && (isUserInOrg(incoming().org_id) || isSuperAdmin());
+      allow update: if isSignedIn() && isValidId(scheduleId) && existing() != null && isValidMinistrySchedule(incoming()) && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(scheduleId) && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+    }
+
+    match /service_checkins/{checkinId} {
+      allow list: if isSignedIn() && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow get: if isSignedIn() && isValidId(checkinId) && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isSignedIn() && isValidId(checkinId) && isValidServiceCheckin(incoming()) && (isUserInOrg(incoming().org_id) || isSuperAdmin());
+      allow update: if isSignedIn() && isValidId(checkinId) && existing() != null && isValidServiceCheckin(incoming()) && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(checkinId) && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+    }
+
+    match /prayer_requests/{requestId} {
+      allow list: if isSignedIn() && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow get: if isSignedIn() && isValidId(requestId) && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isValidId(requestId) && (
+        (isSignedIn() && isValidPrayerRequest(incoming()) && (isUserInOrg(incoming().org_id) || isSuperAdmin()))
+        || isValidPublicPrayerSubmission(incoming())
+      );
+      allow update: if isSignedIn() && isValidId(requestId) && existing() != null && isValidPrayerRequest(incoming()) && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(requestId) && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+    }
+
+    match /pastoral_visits/{visitId} {
+      allow list: if isSignedIn() && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow get: if isSignedIn() && isValidId(visitId) && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isSignedIn() && isValidId(visitId) && isValidPastoralVisit(incoming()) && (isUserInOrg(incoming().org_id) || isSuperAdmin());
+      allow update: if isSignedIn() && isValidId(visitId) && existing() != null && isValidPastoralVisit(incoming()) && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(visitId) && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+    }
+
+    match /saas_invoices/{invoiceId} {
+      allow list: if isSignedIn() && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow get: if isSignedIn() && isValidId(invoiceId) && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isSuperAdmin() && isValidId(invoiceId) && isValidSaaSInvoice(incoming());
+      allow update: if isSuperAdmin() && isValidId(invoiceId) && existing() != null && isValidSaaSInvoice(incoming()) && incoming().org_id == existing().org_id;
+      allow delete: if isSuperAdmin() && isValidId(invoiceId) && existing() != null;
+    }
+
+    match /church_events/{eventId} {
+      allow list: if (existing().allow_public_registration == true && existing().active == true) || (isSignedIn() && (isUserInOrg(existing().org_id) || isSuperAdmin()));
+      allow get: if isValidId(eventId) && existing() != null && ((existing().allow_public_registration == true && existing().active == true) || (isSignedIn() && (isUserInOrg(existing().org_id) || isSuperAdmin())));
+      allow create: if isSignedIn() && isValidId(eventId) && isValidChurchEvent(incoming()) && (isUserInOrg(incoming().org_id) || isSuperAdmin());
+      allow update: if isSignedIn() && isValidId(eventId) && existing() != null && isValidChurchEvent(incoming()) && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(eventId) && existing() != null && (isOrgAdmin(existing().org_id) || isSuperAdmin());
+    }
+
+    match /event_registrations/{regId} {
+      allow list: if isSignedIn() && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow get: if isSignedIn() && isValidId(regId) && existing() != null && (isUserInOrg(existing().org_id) || isSuperAdmin());
+      allow create: if isValidId(regId) && (
+        (isSignedIn() && isValidEventRegistration(incoming()) && (isUserInOrg(incoming().org_id) || isSuperAdmin()))
+        || (
+          isValidPublicEventRegistration(incoming())
+          && exists(/databases/$(database)/documents/church_events/$(incoming().event_id))
+          && get(/databases/$(database)/documents/church_events/$(incoming().event_id)).data.allow_public_registration == true
+          && get(/databases/$(database)/documents/church_events/$(incoming().event_id)).data.active == true
+          && get(/databases/$(database)/documents/church_events/$(incoming().event_id)).data.org_id == incoming().org_id
+        )
+      );
+      allow update: if isSignedIn() && isValidId(regId) && existing() != null && isValidEventRegistration(incoming()) && isUserInOrg(existing().org_id) && incoming().org_id == existing().org_id;
+      allow delete: if isSignedIn() && isValidId(regId) && existing() != null && (isOrgAdmin(existing().org_id) || isSuperAdmin());
+    }
+  }
+}
+

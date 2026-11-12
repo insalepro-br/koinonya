@@ -1,0 +1,10 @@
+{
+  "name": "Koinonia - Integrated Growth CRM",
+  "description": "A comprehensive church management system focused on the journey from visitor to leader, featuring Kanban workflows, humanized automation, and multi-channel analytics.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
