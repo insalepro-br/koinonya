@@ -22,30 +22,40 @@ declare global {
   }
 }
 
-function resolveConfig() {
-  const url = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL)?.replace(/\/$/, '');
-  if (!url) throw new Error('SUPABASE_URL é obrigatório para validar o login.');
-  return {
-    jwksUrl: `${url}/auth/v1/.well-known/jwks.json`,
-    issuer: `${url}/auth/v1`,
-    audience: 'authenticated',
-  };
+interface VerifierConfig {
+  issuer: string;
+  audience: string;
+  jwks: ReturnType<typeof createRemoteJWKSet>;
 }
 
-const config = resolveConfig();
-const jwks = createRemoteJWKSet(new URL(config.jwksUrl));
+// Lido no primeiro uso, não no import: em ESM os imports rodam antes do server.ts carregar o .env.
+let cached: VerifierConfig | undefined;
+
+function config(): VerifierConfig {
+  if (cached) return cached;
+  const url = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL)?.replace(/\/$/, '');
+  if (!url) throw new Error('SUPABASE_URL é obrigatório para validar o login (veja .env.example).');
+  cached = {
+    issuer: `${url}/auth/v1`,
+    audience: 'authenticated',
+    jwks: createRemoteJWKSet(new URL(`${url}/auth/v1/.well-known/jwks.json`)),
+  };
+  return cached;
+}
 
 export function authInfo() {
-  return { provider: 'supabase', issuer: config.issuer, audience: config.audience };
+  const { issuer, audience } = config();
+  return { provider: 'supabase', issuer, audience };
 }
 
 export async function verifyBearer(header: string | undefined): Promise<AuthUser | null> {
   if (!header?.startsWith('Bearer ')) return null;
   const token = header.slice(7).trim();
   if (!token) return null;
+  const { jwks, issuer, audience } = config();
   const { payload } = await jwtVerify(token, jwks, {
-    issuer: config.issuer,
-    audience: config.audience,
+    issuer,
+    audience,
     algorithms: ['ES256', 'RS256'],
   });
   if (!payload.sub || payload.role !== 'authenticated') return null;
