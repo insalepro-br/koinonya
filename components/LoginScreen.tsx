@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Shield, Mail, Key, User, Church as ChurchIcon, ArrowRight, Eye, EyeOff, CheckCircle2, Info, X } from 'lucide-react';
 import { SystemUser, SubscriptionPlan } from '../types';
 import { KoinoniaDB } from '../services/db';
@@ -208,13 +208,37 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     }
   };
 
+  // O cartão se ajusta à altura da tela (sem rolagem): mede o tamanho natural e reduz a escala se não couber.
+  const stageRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [fitScale, setFitScale] = useState(1);
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    const card = cardRef.current;
+    if (!stage || !card) return;
+    const fit = () => {
+      const avail = stage.clientHeight - 24;
+      const natural = card.offsetHeight;
+      setFitScale(natural > 0 ? Math.min(1, Math.max(0.5, avail / natural)) : 1);
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(stage);
+    ro.observe(card);
+    return () => ro.disconnect();
+  }, []);
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-6 relative overflow-hidden transition-colors">
+    <div ref={stageRef} className="h-[100dvh] bg-slate-50 dark:bg-slate-900 flex items-center justify-center px-6 relative overflow-hidden transition-colors">
       {/* Background Decor */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-200/20 dark:bg-indigo-500/10 blur-[120px] rounded-full"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-200/20 dark:bg-blue-500/10 blur-[120px] rounded-full"></div>
 
-      <div className="max-w-xl w-full bg-white dark:bg-slate-800 rounded-[48px] shadow-2xl border border-slate-100 dark:border-slate-700 p-10 md:p-14 relative z-10 transition-all">
+      <div
+        ref={cardRef}
+        style={{ transform: `scale(${fitScale})`, transformOrigin: 'center' }}
+        className="max-w-xl w-full bg-white dark:bg-slate-800 rounded-[48px] shadow-2xl border border-slate-100 dark:border-slate-700 p-10 md:p-14 relative z-10"
+      >
         <div className="flex justify-center mb-8">
           <div className="w-16 h-16 bg-indigo-600 rounded-[24px] flex items-center justify-center shadow-2xl shadow-indigo-200 dark:shadow-none animate-in zoom-in duration-500">
             <Shield className="w-8 h-8 text-white" />
