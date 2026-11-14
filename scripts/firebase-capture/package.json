@@ -1,0 +1,14 @@
+{
+  "name": "koinonya-firebase-capture",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Captura somente leitura do projeto Firebase legado (Firestore, regras, índices, Auth, Storage) para migração ao Supabase.",
+  "scripts": {
+    "capture": "node capture.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0",
+    "google-auth-library": "^9.15.0"
+  }
+}

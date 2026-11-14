@@ -600,6 +600,8 @@ const App: React.FC = () => {
     if (!currentUser || !isLoggedIn) return;
 
     const shouldAutoSeed = (mod: string) => {
+      // Dados de demonstração só com VITE_DEMO_SEED=true (nunca em produção).
+      if (import.meta.env.VITE_DEMO_SEED !== 'true') return false;
       const key = `koinonya_seeded_${currentUser.org_id}_${mod}`;
       if (seededModulesRef.current.has(key) || localStorage.getItem(key) === '1') {
         return false;
