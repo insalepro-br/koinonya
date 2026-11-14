@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { Member, MemberStage, PipelineStage, SystemUser, Cell as CellType, ScheduleEvent } from '../types';
 import { DEFAULT_STAGES, getStageIcon } from '../constants';
-import { auth } from '../lib/firebase';
+import { getAccessToken } from '../lib/supabase';
 
 interface AnalyticsDashboardProps {
   members: Member[];
@@ -246,7 +246,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      const idToken = await auth.currentUser?.getIdToken().catch(() => null);
+      const idToken = await getAccessToken().catch(() => null);
       if (idToken) {
         headers['Authorization'] = `Bearer ${idToken}`;
       }

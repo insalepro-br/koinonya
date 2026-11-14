@@ -1,37 +1,33 @@
 
-import { 
-  collection, 
-  doc, 
-  getDocs, 
-  setDoc, 
-  query, 
-  where, 
+// Acesso a dados via Supabase. A separação entre organizações e as permissões por papel são
+// garantidas pelo RLS do banco (supabase/migrations); este serviço não confia no cliente para isso.
+import {
+  collection,
+  doc,
+  getDocs,
+  setDoc,
+  query,
+  where,
   deleteDoc,
   updateDoc,
   getDoc,
   onSnapshot,
-  FirestoreError
-} from 'firebase/firestore';
-import { db, auth } from '../lib/firebase';
+  rpc,
+  db,
+} from '../lib/dataStore';
+import { getCachedUser } from '../lib/supabase';
 import { Member, ScheduleEvent, SystemUser, Church, Organization, Cell, CellMeeting, AutomationRule, FinancialTransaction, FinancialCampaign, DiscipleshipTrack, MemberTrackProgress, MessageLog, BroadcastCampaign, Ministry, MinistrySchedule, ServiceCheckin, PrayerRequest, PastoralVisit, SaaSInvoice, ChurchEvent, EventRegistration } from '../types';
 
-const handleFirestoreError = (error: any, operationType: string, path: string | null = null) => {
-  console.error(`Firestore Error [${operationType}] at ${path}:`, error);
+const handleDataError = (error: any, operationType: string, path: string | null = null) => {
+  console.error(`Erro de dados [${operationType}] em ${path}:`, error);
   
   const errorInfo = {
     error: error.message || String(error),
     operationType,
     path,
-    authInfo: auth.currentUser ? {
-      userId: auth.currentUser.uid,
-      email: auth.currentUser.email || '',
-      emailVerified: auth.currentUser.emailVerified,
-      isAnonymous: auth.currentUser.isAnonymous,
-      providerInfo: auth.currentUser.providerData.map(p => ({
-        providerId: p.providerId,
-        displayName: p.displayName || '',
-        email: p.email || ''
-      }))
+    authInfo: getCachedUser() ? {
+      userId: getCachedUser()!.id,
+      provider: getCachedUser()!.app_metadata?.provider || 'email',
     } : null
   };
 
@@ -39,14 +35,14 @@ const handleFirestoreError = (error: any, operationType: string, path: string | 
     throw new Error(JSON.stringify(errorInfo));
   }
   
-  if (error.message && error.message.includes('the client is offline')) {
-    throw new Error("Conexão perdida: O sistema não conseguiu alcançar o banco de dados. Verifique sua conexão ou se o banco Firestore está ativo no seu console.");
+  if (error.code === 'unavailable') {
+    throw new Error("Conexão perdida: o sistema não conseguiu alcançar o banco de dados. Verifique sua conexão.");
   }
 
   throw error;
 };
 
-export const parseFirestoreDate = (val: any): Date => {
+export const parseDate = (val: any): Date => {
   if (!val) return new Date();
   if (val instanceof Date) return val;
   if (typeof val.toDate === 'function') return val.toDate();
@@ -58,19 +54,19 @@ export const parseFirestoreDate = (val: any): Date => {
 };
 
 /**
- * Removes undefined fields from objects before sending to Firestore,
- * preventing 'Unsupported field value: undefined' errors.
+ * Removes undefined fields from objects before sending to the database,
+ * preventing 'undefined values' errors.
  */
-export const sanitizeForFirestore = (obj: any): any => {
+export const sanitizePayload = (obj: any): any => {
   if (obj === null || obj === undefined) return null;
   if (typeof obj !== 'object') return obj;
   if (obj instanceof Date) return obj;
-  if (Array.isArray(obj)) return obj.map(item => (item === undefined ? null : sanitizeForFirestore(item)));
+  if (Array.isArray(obj)) return obj.map(item => (item === undefined ? null : sanitizePayload(item)));
   
   const clean: Record<string, any> = {};
   for (const [key, value] of Object.entries(obj)) {
     if (value !== undefined) {
-      clean[key] = sanitizeForFirestore(value);
+      clean[key] = sanitizePayload(value);
     }
   }
   return clean;
@@ -79,55 +75,55 @@ export const sanitizeForFirestore = (obj: any): any => {
 const mapMemberDoc = (docData: any): Member => ({
   ...docData,
   active: docData.active !== false,
-  deleted_at: docData.deleted_at ? parseFirestoreDate(docData.deleted_at) : null,
-  registration_date: parseFirestoreDate(docData.registration_date),
-  last_activity: parseFirestoreDate(docData.last_activity),
+  deleted_at: docData.deleted_at ? parseDate(docData.deleted_at) : null,
+  registration_date: parseDate(docData.registration_date),
+  last_activity: parseDate(docData.last_activity),
   engagement_score: typeof docData.engagement_score === 'number' ? docData.engagement_score : 50,
 });
 
 const mapEventDoc = (docData: any): ScheduleEvent => ({
   ...docData,
-  start_date: parseFirestoreDate(docData.start_date),
-  end_date: parseFirestoreDate(docData.end_date),
-  created_at: parseFirestoreDate(docData.created_at),
+  start_date: parseDate(docData.start_date),
+  end_date: parseDate(docData.end_date),
+  created_at: parseDate(docData.created_at),
 });
 
 const mapCellDoc = (docData: any): Cell => ({
   ...docData,
   active: docData.active !== false,
-  created_at: parseFirestoreDate(docData.created_at),
+  created_at: parseDate(docData.created_at),
 });
 
 const mapCellMeetingDoc = (docData: any): CellMeeting => ({
   ...docData,
-  date: parseFirestoreDate(docData.date),
-  created_at: parseFirestoreDate(docData.created_at),
+  date: parseDate(docData.date),
+  created_at: parseDate(docData.created_at),
 });
 
 const mapAutomationRuleDoc = (docData: any): AutomationRule => ({
   ...docData,
   active: docData.active !== false,
-  created_at: parseFirestoreDate(docData.created_at),
+  created_at: parseDate(docData.created_at),
 });
 
 const mapTransactionDoc = (docData: any): FinancialTransaction => ({
   ...docData,
-  date: parseFirestoreDate(docData.date),
-  created_at: parseFirestoreDate(docData.created_at),
+  date: parseDate(docData.date),
+  created_at: parseDate(docData.created_at),
 });
 
 const mapCampaignDoc = (docData: any): FinancialCampaign => ({
   ...docData,
-  start_date: parseFirestoreDate(docData.start_date),
-  end_date: docData.end_date ? parseFirestoreDate(docData.end_date) : undefined,
-  created_at: parseFirestoreDate(docData.created_at),
+  start_date: parseDate(docData.start_date),
+  end_date: docData.end_date ? parseDate(docData.end_date) : undefined,
+  created_at: parseDate(docData.created_at),
 });
 
 const mapOrganizationDoc = (docData: any): Organization => ({
   ...docData,
-  created_at: parseFirestoreDate(docData.created_at),
-  next_billing_date: docData.next_billing_date ? parseFirestoreDate(docData.next_billing_date) : undefined,
-  trial_ends_at: docData.trial_ends_at ? parseFirestoreDate(docData.trial_ends_at) : undefined,
+  created_at: parseDate(docData.created_at),
+  next_billing_date: docData.next_billing_date ? parseDate(docData.next_billing_date) : undefined,
+  trial_ends_at: docData.trial_ends_at ? parseDate(docData.trial_ends_at) : undefined,
   subscription_status: docData.subscription_status || 'ACTIVE',
   monthly_price: typeof docData.monthly_price === 'number' ? docData.monthly_price : 149,
   billing_cycle: docData.billing_cycle || 'MONTHLY',
@@ -138,22 +134,22 @@ const mapDiscipleshipTrackDoc = (docData: any): DiscipleshipTrack => ({
   ...docData,
   active: docData.active !== false,
   steps: Array.isArray(docData.steps) ? docData.steps : [],
-  created_at: parseFirestoreDate(docData.created_at)
+  created_at: parseDate(docData.created_at)
 });
 
 const mapMemberTrackProgressDoc = (docData: any): MemberTrackProgress => ({
   ...docData,
   completed_step_ids: Array.isArray(docData.completed_step_ids) ? docData.completed_step_ids : [],
-  started_at: parseFirestoreDate(docData.started_at),
-  completed_at: docData.completed_at ? parseFirestoreDate(docData.completed_at) : undefined,
-  created_at: docData.created_at ? parseFirestoreDate(docData.created_at) : undefined,
+  started_at: parseDate(docData.started_at),
+  completed_at: docData.completed_at ? parseDate(docData.completed_at) : undefined,
+  created_at: docData.created_at ? parseDate(docData.created_at) : undefined,
   progress_percent: typeof docData.progress_percent === 'number' ? docData.progress_percent : 0,
   status: docData.status || 'IN_PROGRESS'
 });
 
 const mapMessageLogDoc = (docData: any): MessageLog => ({
   ...docData,
-  sent_at: parseFirestoreDate(docData.sent_at),
+  sent_at: parseDate(docData.sent_at),
   status: docData.status || 'OPENED_WA',
   channel: docData.channel || 'WHATSAPP'
 });
@@ -164,7 +160,7 @@ const mapBroadcastCampaignDoc = (docData: any): BroadcastCampaign => ({
   sent_member_ids: Array.isArray(docData.sent_member_ids) ? docData.sent_member_ids : [],
   total_recipients: typeof docData.total_recipients === 'number' ? docData.total_recipients : 0,
   sent_count: typeof docData.sent_count === 'number' ? docData.sent_count : 0,
-  created_at: parseFirestoreDate(docData.created_at)
+  created_at: parseDate(docData.created_at)
 });
 
 const mapMinistryDoc = (docData: any): Ministry => ({
@@ -172,22 +168,22 @@ const mapMinistryDoc = (docData: any): Ministry => ({
   default_roles: Array.isArray(docData.default_roles) ? docData.default_roles : [],
   volunteer_ids: Array.isArray(docData.volunteer_ids) ? docData.volunteer_ids : [],
   active: docData.active !== false,
-  created_at: parseFirestoreDate(docData.created_at)
+  created_at: parseDate(docData.created_at)
 });
 
 const mapMinistryScheduleDoc = (docData: any): MinistrySchedule => ({
   ...docData,
   assignments: Array.isArray(docData.assignments) ? docData.assignments : [],
-  service_date: parseFirestoreDate(docData.service_date),
-  created_at: parseFirestoreDate(docData.created_at)
+  service_date: parseDate(docData.service_date),
+  created_at: parseDate(docData.created_at)
 });
 
 const mapServiceCheckinDoc = (docData: any): ServiceCheckin => ({
   ...docData,
-  service_date: parseFirestoreDate(docData.service_date),
-  checked_in_at: parseFirestoreDate(docData.checked_in_at),
-  checked_out_at: docData.checked_out_at ? parseFirestoreDate(docData.checked_out_at) : null,
-  created_at: parseFirestoreDate(docData.created_at),
+  service_date: parseDate(docData.service_date),
+  checked_in_at: parseDate(docData.checked_in_at),
+  checked_out_at: docData.checked_out_at ? parseDate(docData.checked_out_at) : null,
+  created_at: parseDate(docData.created_at),
   status: docData.status || 'CHECKED_IN',
   checkin_type: docData.checkin_type || 'SERVICE'
 });
@@ -200,17 +196,17 @@ const mapPrayerRequestDoc = (docData: any): PrayerRequest => ({
   status: docData.status || 'RECEIVED',
   prayer_count: typeof docData.prayer_count === 'number' ? docData.prayer_count : 0,
   source: docData.source || 'MANUAL',
-  answered_at: docData.answered_at ? parseFirestoreDate(docData.answered_at) : null,
-  created_at: parseFirestoreDate(docData.created_at)
+  answered_at: docData.answered_at ? parseDate(docData.answered_at) : null,
+  created_at: parseDate(docData.created_at)
 });
 
 const mapPastoralVisitDoc = (docData: any): PastoralVisit => ({
   ...docData,
   visit_type: docData.visit_type || 'HOME_VISIT',
   status: docData.status || 'SCHEDULED',
-  scheduled_date: parseFirestoreDate(docData.scheduled_date),
-  completed_at: docData.completed_at ? parseFirestoreDate(docData.completed_at) : null,
-  created_at: parseFirestoreDate(docData.created_at)
+  scheduled_date: parseDate(docData.scheduled_date),
+  completed_at: docData.completed_at ? parseDate(docData.completed_at) : null,
+  created_at: parseDate(docData.created_at)
 });
 
 const mapSaaSInvoiceDoc = (docData: any): SaaSInvoice => ({
@@ -218,9 +214,9 @@ const mapSaaSInvoiceDoc = (docData: any): SaaSInvoice => ({
   amount: typeof docData.amount === 'number' ? docData.amount : 149,
   status: docData.status || 'PENDING',
   payment_method: docData.payment_method || 'PIX',
-  due_date: parseFirestoreDate(docData.due_date),
-  paid_at: docData.paid_at ? parseFirestoreDate(docData.paid_at) : null,
-  created_at: parseFirestoreDate(docData.created_at)
+  due_date: parseDate(docData.due_date),
+  paid_at: docData.paid_at ? parseDate(docData.paid_at) : null,
+  created_at: parseDate(docData.created_at)
 });
 
 const mapChurchEventDoc = (docData: any): ChurchEvent => ({
@@ -231,8 +227,8 @@ const mapChurchEventDoc = (docData: any): ChurchEvent => ({
   registration_fee: typeof docData.registration_fee === 'number' ? docData.registration_fee : 0,
   allow_public_registration: docData.allow_public_registration !== false,
   active: docData.active !== false,
-  start_date: parseFirestoreDate(docData.start_date),
-  created_at: parseFirestoreDate(docData.created_at)
+  start_date: parseDate(docData.start_date),
+  created_at: parseDate(docData.created_at)
 });
 
 const mapEventRegistrationDoc = (docData: any): EventRegistration => ({
@@ -241,8 +237,8 @@ const mapEventRegistrationDoc = (docData: any): EventRegistration => ({
   amount_paid: typeof docData.amount_paid === 'number' ? docData.amount_paid : 0,
   status: docData.status || 'CONFIRMED',
   source: docData.source || 'MANUAL',
-  checked_in_at: docData.checked_in_at ? parseFirestoreDate(docData.checked_in_at) : null,
-  created_at: parseFirestoreDate(docData.created_at)
+  checked_in_at: docData.checked_in_at ? parseDate(docData.checked_in_at) : null,
+  created_at: parseDate(docData.created_at)
 });
 
 export const KoinoniaDB = {
@@ -252,18 +248,18 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const members = snapshot.docs.map(doc => mapMemberDoc(doc.data()));
       callback(members);
-    }, (err) => handleFirestoreError(err, 'list', 'members'));
+    }, (err) => handleDataError(err, 'list', 'members'));
   },
   saveMember: async (member: Member) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...member,
         active: member.active !== false,
-        registration_date: parseFirestoreDate(member.registration_date),
-        last_activity: parseFirestoreDate(member.last_activity),
+        registration_date: parseDate(member.registration_date),
+        last_activity: parseDate(member.last_activity),
       });
       await setDoc(doc(db, "members", member.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `members/${member.id}`); }
+    } catch (err) { handleDataError(err, 'create', `members/${member.id}`); }
   },
   // Soft Delete: Archives the member instead of hard-deleting, keeping all ministry records safe
   deleteMember: async (id: string, deletedBy?: string) => {
@@ -271,9 +267,9 @@ export const KoinoniaDB = {
       await updateDoc(doc(db, "members", id), {
         active: false,
         deleted_at: new Date(),
-        deleted_by: deletedBy || auth.currentUser?.email || 'system'
+        deleted_by: deletedBy || getCachedUser()?.email || 'system'
       });
-    } catch (err) { handleFirestoreError(err, 'update', `members/${id}`); }
+    } catch (err) { handleDataError(err, 'update', `members/${id}`); }
   },
   // Restore archived member back to active status
   restoreMember: async (id: string) => {
@@ -283,13 +279,13 @@ export const KoinoniaDB = {
         deleted_at: null,
         deleted_by: null
       });
-    } catch (err) { handleFirestoreError(err, 'update', `members/${id}`); }
+    } catch (err) { handleDataError(err, 'update', `members/${id}`); }
   },
   // Hard Delete: Reserved for GDPR/LGPD compliance when explicitly requested
   permanentDeleteMember: async (id: string) => {
     try {
       await deleteDoc(doc(db, "members", id));
-    } catch (err) { handleFirestoreError(err, 'delete', `members/${id}`); }
+    } catch (err) { handleDataError(err, 'delete', `members/${id}`); }
   },
   seedInitialMembers: async (orgId: string, churchId: string) => {
     const demoMembers = [
@@ -370,23 +366,23 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const events = snapshot.docs.map(doc => mapEventDoc(doc.data()));
       callback(events);
-    }, (err) => handleFirestoreError(err, 'list', 'events'));
+    }, (err) => handleDataError(err, 'list', 'events'));
   },
   saveEvent: async (event: ScheduleEvent) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...event,
-        start_date: parseFirestoreDate(event.start_date),
-        end_date: parseFirestoreDate(event.end_date),
-        created_at: parseFirestoreDate(event.created_at),
+        start_date: parseDate(event.start_date),
+        end_date: parseDate(event.end_date),
+        created_at: parseDate(event.created_at),
       });
       await setDoc(doc(db, "events", event.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `events/${event.id}`); }
+    } catch (err) { handleDataError(err, 'create', `events/${event.id}`); }
   },
   deleteEvent: async (id: string) => {
     try {
       await deleteDoc(doc(db, "events", id));
-    } catch (err) { handleFirestoreError(err, 'delete', `events/${id}`); }
+    } catch (err) { handleDataError(err, 'delete', `events/${id}`); }
   },
 
   // Users / Team
@@ -394,25 +390,43 @@ export const KoinoniaDB = {
     try {
       const d = await getDoc(doc(db, "users", userId));
       return d.exists() ? (d.data() as SystemUser) : null;
-    } catch (err) { handleFirestoreError(err, 'get', `users/${userId}`); return null; }
+    } catch (err) { handleDataError(err, 'get', `users/${userId}`); return null; }
+  },
+  /**
+   * Perfil do usuário logado (por auth_user_id, não pelo ID do perfil: perfis importados do Firebase
+   * mantêm o UID antigo). Se ainda não houver vínculo, tenta vincular por e-mail confirmado.
+   */
+  getMyProfile: async (): Promise<SystemUser | null> => {
+    const profile = await rpc<SystemUser | null>('claim_profile');
+    return profile && (profile as any).id ? (profile as SystemUser) : null;
+  },
+  /** Cria organização, igreja e perfil ADMIN do usuário logado numa transação no banco. */
+  onboardOrganization: async (data: { orgName: string; churchName: string; userName: string; plan: string; whatsapp?: string }): Promise<SystemUser> => {
+    return rpc<SystemUser>('onboard_organization', {
+      org_name: data.orgName,
+      church_name: data.churchName,
+      user_name: data.userName,
+      plan: data.plan,
+      whatsapp: data.whatsapp || null,
+    });
   },
   saveUserProfile: async (user: SystemUser) => {
     try {
       const { password: _ignoredPassword, ...safeUser } = user as any;
-      await setDoc(doc(db, "users", user.id), sanitizeForFirestore(safeUser));
-    } catch (err) { handleFirestoreError(err, 'create', `users/${user.id}`); }
+      await setDoc(doc(db, "users", user.id), sanitizePayload(safeUser));
+    } catch (err) { handleDataError(err, 'create', `users/${user.id}`); }
   },
   deleteUserProfile: async (userId: string) => {
     try {
       await deleteDoc(doc(db, "users", userId));
-    } catch (err) { handleFirestoreError(err, 'delete', `users/${userId}`); }
+    } catch (err) { handleDataError(err, 'delete', `users/${userId}`); }
   },
   subscribeTeam: (orgId: string, callback: (users: SystemUser[]) => void) => {
     const q = query(collection(db, "users"), where("org_id", "==", orgId));
     return onSnapshot(q, (snapshot) => {
       const users = snapshot.docs.map(doc => ({ ...doc.data() } as SystemUser));
       callback(users);
-    }, (err) => handleFirestoreError(err, 'list', 'users'));
+    }, (err) => handleDataError(err, 'list', 'users'));
   },
 
   // Organizations & SaaS Multi-Tenant Management
@@ -420,36 +434,36 @@ export const KoinoniaDB = {
     try {
       const d = await getDoc(doc(db, "organizations", orgId));
       return d.exists() ? mapOrganizationDoc(d.data()) : null;
-    } catch (err) { handleFirestoreError(err, 'get', `organizations/${orgId}`); return null; }
+    } catch (err) { handleDataError(err, 'get', `organizations/${orgId}`); return null; }
   },
   saveOrganization: async (org: Organization) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...org,
-        created_at: parseFirestoreDate(org.created_at),
-        next_billing_date: org.next_billing_date ? parseFirestoreDate(org.next_billing_date) : null,
-        trial_ends_at: org.trial_ends_at ? parseFirestoreDate(org.trial_ends_at) : null,
+        created_at: parseDate(org.created_at),
+        next_billing_date: org.next_billing_date ? parseDate(org.next_billing_date) : null,
+        trial_ends_at: org.trial_ends_at ? parseDate(org.trial_ends_at) : null,
       });
       await setDoc(doc(db, "organizations", org.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `organizations/${org.id}`); }
+    } catch (err) { handleDataError(err, 'create', `organizations/${org.id}`); }
   },
   updateOrganizationFields: async (orgId: string, updates: Partial<Organization>) => {
     try {
-      const payload = sanitizeForFirestore(updates);
+      const payload = sanitizePayload(updates);
       await updateDoc(doc(db, "organizations", orgId), payload);
-    } catch (err) { handleFirestoreError(err, 'update', `organizations/${orgId}`); }
+    } catch (err) { handleDataError(err, 'update', `organizations/${orgId}`); }
   },
   subscribeOrganization: (orgId: string, callback: (org: Organization | null) => void) => {
     return onSnapshot(doc(db, "organizations", orgId), (snapshot) => {
       callback(snapshot.exists() ? mapOrganizationDoc(snapshot.data()) : null);
-    }, (err) => handleFirestoreError(err, 'get', `organizations/${orgId}`));
+    }, (err) => handleDataError(err, 'get', `organizations/${orgId}`));
   },
   subscribeAllOrganizations: (callback: (orgs: Organization[]) => void) => {
     const q = collection(db, "organizations");
     return onSnapshot(q, (snapshot) => {
       const orgs = snapshot.docs.map(doc => mapOrganizationDoc(doc.data()));
       callback(orgs);
-    }, (err) => handleFirestoreError(err, 'list', 'organizations'));
+    }, (err) => handleDataError(err, 'list', 'organizations'));
   },
   provisionTenantOrganization: async (data: {
     name: string;
@@ -596,24 +610,24 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const churches = snapshot.docs.map(doc => ({ ...doc.data() } as Church));
       callback(churches);
-    }, (err) => handleFirestoreError(err, 'list', 'churches'));
+    }, (err) => handleDataError(err, 'list', 'churches'));
   },
   saveChurch: async (church: Church) => {
     try {
-      await setDoc(doc(db, "churches", church.id), sanitizeForFirestore(church));
-    } catch (err) { handleFirestoreError(err, 'create', `churches/${church.id}`); }
+      await setDoc(doc(db, "churches", church.id), sanitizePayload(church));
+    } catch (err) { handleDataError(err, 'create', `churches/${church.id}`); }
   },
   saveChurchData: async (church: Church) => {
     try {
-      await setDoc(doc(db, "churches", church.id), sanitizeForFirestore(church));
-    } catch (err) { handleFirestoreError(err, 'update', `churches/${church.id}`); }
+      await setDoc(doc(db, "churches", church.id), sanitizePayload(church));
+    } catch (err) { handleDataError(err, 'update', `churches/${church.id}`); }
   },
 
   // Public visitor check-in methods (no auth required)
   getPublicChurch: async (churchId: string): Promise<Church | null> => {
     try {
-      const d = await getDoc(doc(db, "churches", churchId));
-      return d.exists() ? ({ ...d.data() } as Church) : null;
+      const rows = await rpc<Church[]>('get_public_church', { church_id: churchId });
+      return rows && rows.length ? ({ ...rows[0], created_at: new Date() } as Church) : null;
     } catch (err) {
       console.warn("Could not fetch public church data:", err);
       return null;
@@ -636,67 +650,23 @@ export const KoinoniaDB = {
     churchId: string;
     orgId: string;
   }): Promise<{ success: boolean; memberId: string; message: string }> => {
+    // A organização vem da igreja no banco; o orgId enviado pelo cliente não é usado para gravar.
     try {
-      const memberId = Math.random().toString(36).substr(2, 9);
-      const combinedNotes = [
-        payload.prayerRequest ? `🙏 Pedido de Oração: ${payload.prayerRequest}` : '',
-        payload.howMet ? `📍 Como conheceu: ${payload.howMet}` : '',
-        payload.neighborhood ? `🏠 Bairro: ${payload.neighborhood}` : '',
-        payload.familyCount && payload.familyCount > 1 ? `👨‍👩‍👧‍👦 Família presente: ${payload.familyCount} pessoas (${payload.familyNotes || ''})` : '',
-      ].filter(Boolean).join('\n\n');
-
-      const newMember: Member = {
-        id: memberId,
-        org_id: payload.orgId,
+      const memberId = await rpc<string>('submit_visitor_checkin', {
         church_id: payload.churchId,
-        name: payload.name.trim(),
-        phone: payload.phone.trim(),
-        email: payload.email?.trim() || '',
-        gender: payload.gender || '',
-        cep: payload.cep || '',
-        address: payload.address || '',
-        neighborhood: payload.neighborhood || '',
-        city: payload.city || '',
-        stage: 'NEW',
-        channel: 'QR_CODE',
-        engagement_score: 50,
-        registration_date: new Date(),
-        last_activity: new Date(),
-        notes: combinedNotes,
-        interests: payload.prayerRequest ? 'Oração' : 'Acolhimento',
-      };
-
-      await setDoc(doc(db, "members", memberId), sanitizeForFirestore({
-        ...newMember,
-        registration_date: new Date(),
-        last_activity: new Date()
-      }));
-
-      if (payload.prayerRequest && payload.prayerRequest.trim()) {
-        const prayerId = 'pray_' + Math.random().toString(36).substr(2, 9);
-        const prayerPayload: PrayerRequest = {
-          id: prayerId,
-          org_id: payload.orgId,
-          church_id: payload.churchId,
-          member_id: memberId,
-          requester_name: payload.name.trim(),
-          requester_phone: payload.phone.trim(),
-          category: 'OTHER',
-          urgency: 'NORMAL',
-          privacy: 'LEADERS_ONLY',
-          request_text: payload.prayerRequest.trim().slice(0, 2000),
-          status: 'RECEIVED',
-          prayer_count: 0,
-          source: 'QR_CODE',
-          created_at: new Date()
-        };
-        try {
-          await setDoc(doc(db, "prayer_requests", prayerId), sanitizeForFirestore(prayerPayload));
-        } catch (prayerErr) {
-          console.warn("Aviso ao salvar pedido de oração público:", prayerErr);
-        }
-      }
-
+        name: payload.name,
+        phone: payload.phone,
+        email: payload.email || null,
+        gender: payload.gender || null,
+        cep: payload.cep || null,
+        address: payload.address || null,
+        neighborhood: payload.neighborhood || null,
+        city: payload.city || null,
+        how_met: payload.howMet || null,
+        prayer_request: payload.prayerRequest || null,
+        family_count: payload.familyCount ?? null,
+        family_notes: payload.familyNotes || null,
+      });
       return { success: true, memberId, message: 'Check-in realizado com sucesso!' };
     } catch (err: any) {
       console.error("Erro ao registrar check-in público:", err);
@@ -710,39 +680,39 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const cells = snapshot.docs.map(doc => mapCellDoc(doc.data()));
       callback(cells);
-    }, (err) => handleFirestoreError(err, 'list', 'cells'));
+    }, (err) => handleDataError(err, 'list', 'cells'));
   },
   saveCell: async (cell: Cell) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...cell,
         active: cell.active !== false,
-        created_at: parseFirestoreDate(cell.created_at),
+        created_at: parseDate(cell.created_at),
       });
       await setDoc(doc(db, "cells", cell.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `cells/${cell.id}`); }
+    } catch (err) { handleDataError(err, 'create', `cells/${cell.id}`); }
   },
   deleteCell: async (id: string) => {
     try {
       await updateDoc(doc(db, "cells", id), { active: false });
-    } catch (err) { handleFirestoreError(err, 'update', `cells/${id}`); }
+    } catch (err) { handleDataError(err, 'update', `cells/${id}`); }
   },
   subscribeCellMeetings: (orgId: string, cellId: string, callback: (meetings: CellMeeting[]) => void) => {
     const q = query(collection(db, "cell_meetings"), where("org_id", "==", orgId), where("cell_id", "==", cellId));
     return onSnapshot(q, (snapshot) => {
       const meetings = snapshot.docs.map(doc => mapCellMeetingDoc(doc.data()));
       callback(meetings);
-    }, (err) => handleFirestoreError(err, 'list', 'cell_meetings'));
+    }, (err) => handleDataError(err, 'list', 'cell_meetings'));
   },
   saveCellMeeting: async (meeting: CellMeeting) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...meeting,
-        date: parseFirestoreDate(meeting.date),
-        created_at: parseFirestoreDate(meeting.created_at),
+        date: parseDate(meeting.date),
+        created_at: parseDate(meeting.created_at),
       });
       await setDoc(doc(db, "cell_meetings", meeting.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `cell_meetings/${meeting.id}`); }
+    } catch (err) { handleDataError(err, 'create', `cell_meetings/${meeting.id}`); }
   },
   seedInitialCells: async (orgId: string, churchId: string, leaderId?: string) => {
     const orgSlug = orgId.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -798,17 +768,17 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const rules = snapshot.docs.map(doc => mapAutomationRuleDoc(doc.data()));
       callback(rules);
-    }, (err) => handleFirestoreError(err, 'list', 'automation_rules'));
+    }, (err) => handleDataError(err, 'list', 'automation_rules'));
   },
   saveAutomationRule: async (rule: AutomationRule) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...rule,
         active: rule.active !== false,
-        created_at: parseFirestoreDate(rule.created_at),
+        created_at: parseDate(rule.created_at),
       });
       await setDoc(doc(db, "automation_rules", rule.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `automation_rules/${rule.id}`); }
+    } catch (err) { handleDataError(err, 'create', `automation_rules/${rule.id}`); }
   },
   seedDefaultAutomationRules: async (orgId: string, churchId: string) => {
     const orgSlug = orgId.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -885,24 +855,24 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const txs = snapshot.docs.map(doc => mapTransactionDoc(doc.data()));
       callback(txs.sort((a, b) => b.date.getTime() - a.date.getTime()));
-    }, (err) => handleFirestoreError(err, 'list', 'financial_transactions'));
+    }, (err) => handleDataError(err, 'list', 'financial_transactions'));
   },
 
   saveTransaction: async (tx: FinancialTransaction) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...tx,
-        date: parseFirestoreDate(tx.date),
-        created_at: parseFirestoreDate(tx.created_at)
+        date: parseDate(tx.date),
+        created_at: parseDate(tx.created_at)
       });
       await setDoc(doc(db, "financial_transactions", tx.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `financial_transactions/${tx.id}`); }
+    } catch (err) { handleDataError(err, 'create', `financial_transactions/${tx.id}`); }
   },
 
   deleteTransaction: async (id: string) => {
     try {
       await deleteDoc(doc(db, "financial_transactions", id));
-    } catch (err) { handleFirestoreError(err, 'delete', `financial_transactions/${id}`); }
+    } catch (err) { handleDataError(err, 'delete', `financial_transactions/${id}`); }
   },
 
   subscribeCampaigns: (orgId: string, callback: (campaigns: FinancialCampaign[]) => void) => {
@@ -910,25 +880,25 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const campaigns = snapshot.docs.map(doc => mapCampaignDoc(doc.data()));
       callback(campaigns);
-    }, (err) => handleFirestoreError(err, 'list', 'financial_campaigns'));
+    }, (err) => handleDataError(err, 'list', 'financial_campaigns'));
   },
 
   saveCampaign: async (campaign: FinancialCampaign) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...campaign,
-        start_date: parseFirestoreDate(campaign.start_date),
-        end_date: campaign.end_date ? parseFirestoreDate(campaign.end_date) : null,
-        created_at: parseFirestoreDate(campaign.created_at)
+        start_date: parseDate(campaign.start_date),
+        end_date: campaign.end_date ? parseDate(campaign.end_date) : null,
+        created_at: parseDate(campaign.created_at)
       });
       await setDoc(doc(db, "financial_campaigns", campaign.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `financial_campaigns/${campaign.id}`); }
+    } catch (err) { handleDataError(err, 'create', `financial_campaigns/${campaign.id}`); }
   },
 
   deleteCampaign: async (id: string) => {
     try {
       await deleteDoc(doc(db, "financial_campaigns", id));
-    } catch (err) { handleFirestoreError(err, 'delete', `financial_campaigns/${id}`); }
+    } catch (err) { handleDataError(err, 'delete', `financial_campaigns/${id}`); }
   },
 
   seedInitialFinancialData: async (orgId: string, churchId: string) => {
@@ -1016,23 +986,23 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const tracks = snapshot.docs.map(doc => mapDiscipleshipTrackDoc(doc.data()));
       callback(tracks);
-    }, (err) => handleFirestoreError(err, 'list', 'discipleship_tracks'));
+    }, (err) => handleDataError(err, 'list', 'discipleship_tracks'));
   },
 
   saveDiscipleshipTrack: async (track: DiscipleshipTrack) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...track,
-        created_at: parseFirestoreDate(track.created_at)
+        created_at: parseDate(track.created_at)
       });
       await setDoc(doc(db, "discipleship_tracks", track.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `discipleship_tracks/${track.id}`); }
+    } catch (err) { handleDataError(err, 'create', `discipleship_tracks/${track.id}`); }
   },
 
   deleteDiscipleshipTrack: async (id: string) => {
     try {
       await deleteDoc(doc(db, "discipleship_tracks", id));
-    } catch (err) { handleFirestoreError(err, 'delete', `discipleship_tracks/${id}`); }
+    } catch (err) { handleDataError(err, 'delete', `discipleship_tracks/${id}`); }
   },
 
   subscribeMemberTrackProgress: (orgId: string, callback: (progress: MemberTrackProgress[]) => void) => {
@@ -1040,25 +1010,25 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const list = snapshot.docs.map(doc => mapMemberTrackProgressDoc(doc.data()));
       callback(list);
-    }, (err) => handleFirestoreError(err, 'list', 'member_track_progress'));
+    }, (err) => handleDataError(err, 'list', 'member_track_progress'));
   },
 
   saveMemberTrackProgress: async (progress: MemberTrackProgress) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...progress,
-        started_at: parseFirestoreDate(progress.started_at),
-        completed_at: progress.completed_at ? parseFirestoreDate(progress.completed_at) : null,
-        created_at: progress.created_at ? parseFirestoreDate(progress.created_at) : new Date()
+        started_at: parseDate(progress.started_at),
+        completed_at: progress.completed_at ? parseDate(progress.completed_at) : null,
+        created_at: progress.created_at ? parseDate(progress.created_at) : new Date()
       });
       await setDoc(doc(db, "member_track_progress", progress.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `member_track_progress/${progress.id}`); }
+    } catch (err) { handleDataError(err, 'create', `member_track_progress/${progress.id}`); }
   },
 
   deleteMemberTrackProgress: async (id: string) => {
     try {
       await deleteDoc(doc(db, "member_track_progress", id));
-    } catch (err) { handleFirestoreError(err, 'delete', `member_track_progress/${id}`); }
+    } catch (err) { handleDataError(err, 'delete', `member_track_progress/${id}`); }
   },
 
   seedInitialDiscipleshipTracks: async (orgId: string, churchId: string) => {
@@ -1208,23 +1178,23 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const logs = snapshot.docs.map(doc => mapMessageLogDoc(doc.data()));
       callback(logs.sort((a, b) => b.sent_at.getTime() - a.sent_at.getTime()));
-    }, (err) => handleFirestoreError(err, 'list', 'message_logs'));
+    }, (err) => handleDataError(err, 'list', 'message_logs'));
   },
 
   saveMessageLog: async (log: MessageLog) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...log,
-        sent_at: parseFirestoreDate(log.sent_at)
+        sent_at: parseDate(log.sent_at)
       });
       await setDoc(doc(db, "message_logs", log.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `message_logs/${log.id}`); }
+    } catch (err) { handleDataError(err, 'create', `message_logs/${log.id}`); }
   },
 
   deleteMessageLog: async (id: string) => {
     try {
       await deleteDoc(doc(db, "message_logs", id));
-    } catch (err) { handleFirestoreError(err, 'delete', `message_logs/${id}`); }
+    } catch (err) { handleDataError(err, 'delete', `message_logs/${id}`); }
   },
 
   subscribeBroadcastCampaigns: (orgId: string, callback: (campaigns: BroadcastCampaign[]) => void) => {
@@ -1232,23 +1202,23 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const campaigns = snapshot.docs.map(doc => mapBroadcastCampaignDoc(doc.data()));
       callback(campaigns.sort((a, b) => b.created_at.getTime() - a.created_at.getTime()));
-    }, (err) => handleFirestoreError(err, 'list', 'broadcast_campaigns'));
+    }, (err) => handleDataError(err, 'list', 'broadcast_campaigns'));
   },
 
   saveBroadcastCampaign: async (campaign: BroadcastCampaign) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...campaign,
-        created_at: parseFirestoreDate(campaign.created_at)
+        created_at: parseDate(campaign.created_at)
       });
       await setDoc(doc(db, "broadcast_campaigns", campaign.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `broadcast_campaigns/${campaign.id}`); }
+    } catch (err) { handleDataError(err, 'create', `broadcast_campaigns/${campaign.id}`); }
   },
 
   deleteBroadcastCampaign: async (id: string) => {
     try {
       await deleteDoc(doc(db, "broadcast_campaigns", id));
-    } catch (err) { handleFirestoreError(err, 'delete', `broadcast_campaigns/${id}`); }
+    } catch (err) { handleDataError(err, 'delete', `broadcast_campaigns/${id}`); }
   },
 
   // --- ESCALAS DE MINISTÉRIOS & VOLUNTARIADO (ETAPA 3 DO ROADMAP) ---
@@ -1257,24 +1227,24 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const list = snapshot.docs.map(doc => mapMinistryDoc(doc.data()));
       callback(list.sort((a, b) => a.name.localeCompare(b.name)));
-    }, (err) => handleFirestoreError(err, 'list', 'ministries'));
+    }, (err) => handleDataError(err, 'list', 'ministries'));
   },
 
   saveMinistry: async (ministry: Ministry) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...ministry,
         active: ministry.active !== false,
-        created_at: parseFirestoreDate(ministry.created_at)
+        created_at: parseDate(ministry.created_at)
       });
       await setDoc(doc(db, "ministries", ministry.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `ministries/${ministry.id}`); }
+    } catch (err) { handleDataError(err, 'create', `ministries/${ministry.id}`); }
   },
 
   deleteMinistry: async (id: string) => {
     try {
       await deleteDoc(doc(db, "ministries", id));
-    } catch (err) { handleFirestoreError(err, 'delete', `ministries/${id}`); }
+    } catch (err) { handleDataError(err, 'delete', `ministries/${id}`); }
   },
 
   subscribeMinistrySchedules: (orgId: string, callback: (schedules: MinistrySchedule[]) => void) => {
@@ -1282,24 +1252,24 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const list = snapshot.docs.map(doc => mapMinistryScheduleDoc(doc.data()));
       callback(list.sort((a, b) => a.service_date.getTime() - b.service_date.getTime()));
-    }, (err) => handleFirestoreError(err, 'list', 'ministry_schedules'));
+    }, (err) => handleDataError(err, 'list', 'ministry_schedules'));
   },
 
   saveMinistrySchedule: async (schedule: MinistrySchedule) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...schedule,
-        service_date: parseFirestoreDate(schedule.service_date),
-        created_at: parseFirestoreDate(schedule.created_at)
+        service_date: parseDate(schedule.service_date),
+        created_at: parseDate(schedule.created_at)
       });
       await setDoc(doc(db, "ministry_schedules", schedule.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `ministry_schedules/${schedule.id}`); }
+    } catch (err) { handleDataError(err, 'create', `ministry_schedules/${schedule.id}`); }
   },
 
   deleteMinistrySchedule: async (id: string) => {
     try {
       await deleteDoc(doc(db, "ministry_schedules", id));
-    } catch (err) { handleFirestoreError(err, 'delete', `ministry_schedules/${id}`); }
+    } catch (err) { handleDataError(err, 'delete', `ministry_schedules/${id}`); }
   },
 
   seedInitialMinistries: async (orgId: string, churchId: string) => {
@@ -1361,26 +1331,26 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const list = snapshot.docs.map(doc => mapServiceCheckinDoc(doc.data()));
       callback(list.sort((a, b) => b.checked_in_at.getTime() - a.checked_in_at.getTime()));
-    }, (err) => handleFirestoreError(err, 'list', 'service_checkins'));
+    }, (err) => handleDataError(err, 'list', 'service_checkins'));
   },
 
   saveServiceCheckin: async (checkin: ServiceCheckin) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...checkin,
-        service_date: parseFirestoreDate(checkin.service_date),
-        checked_in_at: parseFirestoreDate(checkin.checked_in_at),
-        checked_out_at: checkin.checked_out_at ? parseFirestoreDate(checkin.checked_out_at) : null,
-        created_at: parseFirestoreDate(checkin.created_at)
+        service_date: parseDate(checkin.service_date),
+        checked_in_at: parseDate(checkin.checked_in_at),
+        checked_out_at: checkin.checked_out_at ? parseDate(checkin.checked_out_at) : null,
+        created_at: parseDate(checkin.created_at)
       });
       await setDoc(doc(db, "service_checkins", checkin.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `service_checkins/${checkin.id}`); }
+    } catch (err) { handleDataError(err, 'create', `service_checkins/${checkin.id}`); }
   },
 
   deleteServiceCheckin: async (id: string) => {
     try {
       await deleteDoc(doc(db, "service_checkins", id));
-    } catch (err) { handleFirestoreError(err, 'delete', `service_checkins/${id}`); }
+    } catch (err) { handleDataError(err, 'delete', `service_checkins/${id}`); }
   },
 
   // --- CUIDADO PASTORAL, PEDIDOS DE ORAÇÃO & VISITAS (ETAPA 5 DO ROADMAP) ---
@@ -1389,24 +1359,24 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const list = snapshot.docs.map(doc => mapPrayerRequestDoc(doc.data()));
       callback(list.sort((a, b) => b.created_at.getTime() - a.created_at.getTime()));
-    }, (err) => handleFirestoreError(err, 'list', 'prayer_requests'));
+    }, (err) => handleDataError(err, 'list', 'prayer_requests'));
   },
 
   savePrayerRequest: async (req: PrayerRequest) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...req,
-        answered_at: req.answered_at ? parseFirestoreDate(req.answered_at) : null,
-        created_at: parseFirestoreDate(req.created_at)
+        answered_at: req.answered_at ? parseDate(req.answered_at) : null,
+        created_at: parseDate(req.created_at)
       });
       await setDoc(doc(db, "prayer_requests", req.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `prayer_requests/${req.id}`); }
+    } catch (err) { handleDataError(err, 'create', `prayer_requests/${req.id}`); }
   },
 
   deletePrayerRequest: async (id: string) => {
     try {
       await deleteDoc(doc(db, "prayer_requests", id));
-    } catch (err) { handleFirestoreError(err, 'delete', `prayer_requests/${id}`); }
+    } catch (err) { handleDataError(err, 'delete', `prayer_requests/${id}`); }
   },
 
   subscribePastoralVisits: (orgId: string, callback: (visits: PastoralVisit[]) => void) => {
@@ -1414,25 +1384,25 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const list = snapshot.docs.map(doc => mapPastoralVisitDoc(doc.data()));
       callback(list.sort((a, b) => a.scheduled_date.getTime() - b.scheduled_date.getTime()));
-    }, (err) => handleFirestoreError(err, 'list', 'pastoral_visits'));
+    }, (err) => handleDataError(err, 'list', 'pastoral_visits'));
   },
 
   savePastoralVisit: async (visit: PastoralVisit) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...visit,
-        scheduled_date: parseFirestoreDate(visit.scheduled_date),
-        completed_at: visit.completed_at ? parseFirestoreDate(visit.completed_at) : null,
-        created_at: parseFirestoreDate(visit.created_at)
+        scheduled_date: parseDate(visit.scheduled_date),
+        completed_at: visit.completed_at ? parseDate(visit.completed_at) : null,
+        created_at: parseDate(visit.created_at)
       });
       await setDoc(doc(db, "pastoral_visits", visit.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `pastoral_visits/${visit.id}`); }
+    } catch (err) { handleDataError(err, 'create', `pastoral_visits/${visit.id}`); }
   },
 
   deletePastoralVisit: async (id: string) => {
     try {
       await deleteDoc(doc(db, "pastoral_visits", id));
-    } catch (err) { handleFirestoreError(err, 'delete', `pastoral_visits/${id}`); }
+    } catch (err) { handleDataError(err, 'delete', `pastoral_visits/${id}`); }
   },
 
   // --- FATURAMENTO SAAS & LEDGER DE FATURAS (ETAPA 6 DO ROADMAP) ---
@@ -1441,7 +1411,7 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const list = snapshot.docs.map(doc => mapSaaSInvoiceDoc(doc.data()));
       callback(list.sort((a, b) => b.due_date.getTime() - a.due_date.getTime()));
-    }, (err) => handleFirestoreError(err, 'list', 'saas_invoices'));
+    }, (err) => handleDataError(err, 'list', 'saas_invoices'));
   },
 
   subscribeOrgInvoices: (orgId: string, callback: (invoices: SaaSInvoice[]) => void) => {
@@ -1449,26 +1419,26 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const list = snapshot.docs.map(doc => mapSaaSInvoiceDoc(doc.data()));
       callback(list.sort((a, b) => b.due_date.getTime() - a.due_date.getTime()));
-    }, (err) => handleFirestoreError(err, 'list', 'saas_invoices'));
+    }, (err) => handleDataError(err, 'list', 'saas_invoices'));
   },
 
   saveSaaSInvoice: async (invoice: SaaSInvoice) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...invoice,
         amount: Number(invoice.amount) || 0,
-        due_date: parseFirestoreDate(invoice.due_date),
-        paid_at: invoice.paid_at ? parseFirestoreDate(invoice.paid_at) : null,
-        created_at: parseFirestoreDate(invoice.created_at)
+        due_date: parseDate(invoice.due_date),
+        paid_at: invoice.paid_at ? parseDate(invoice.paid_at) : null,
+        created_at: parseDate(invoice.created_at)
       });
       await setDoc(doc(db, "saas_invoices", invoice.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `saas_invoices/${invoice.id}`); }
+    } catch (err) { handleDataError(err, 'create', `saas_invoices/${invoice.id}`); }
   },
 
   deleteSaaSInvoice: async (id: string) => {
     try {
       await deleteDoc(doc(db, "saas_invoices", id));
-    } catch (err) { handleFirestoreError(err, 'delete', `saas_invoices/${id}`); }
+    } catch (err) { handleDataError(err, 'delete', `saas_invoices/${id}`); }
   },
 
   generateMonthlySaaSInvoices: async (
@@ -1524,7 +1494,7 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const list = snapshot.docs.map(doc => mapChurchEventDoc(doc.data()));
       callback(list.sort((a, b) => a.start_date.getTime() - b.start_date.getTime()));
-    }, (err) => handleFirestoreError(err, 'list', 'church_events'));
+    }, (err) => handleDataError(err, 'list', 'church_events'));
   },
 
   subscribePublicChurchEvents: (orgId: string, callback: (events: ChurchEvent[]) => void) => {
@@ -1537,28 +1507,28 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const list = snapshot.docs.map(doc => mapChurchEventDoc(doc.data()));
       callback(list.sort((a, b) => a.start_date.getTime() - b.start_date.getTime()));
-    }, (err) => handleFirestoreError(err, 'list', 'church_events'));
+    }, (err) => handleDataError(err, 'list', 'church_events'));
   },
 
   saveChurchEvent: async (ev: ChurchEvent) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...ev,
         capacity: Number(ev.capacity) || 100,
         registration_fee: Number(ev.registration_fee) || 0,
         allow_public_registration: ev.allow_public_registration !== false,
         active: ev.active !== false,
-        start_date: parseFirestoreDate(ev.start_date),
-        created_at: parseFirestoreDate(ev.created_at)
+        start_date: parseDate(ev.start_date),
+        created_at: parseDate(ev.created_at)
       });
       await setDoc(doc(db, "church_events", ev.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `church_events/${ev.id}`); }
+    } catch (err) { handleDataError(err, 'create', `church_events/${ev.id}`); }
   },
 
   deleteChurchEvent: async (id: string) => {
     try {
       await deleteDoc(doc(db, "church_events", id));
-    } catch (err) { handleFirestoreError(err, 'delete', `church_events/${id}`); }
+    } catch (err) { handleDataError(err, 'delete', `church_events/${id}`); }
   },
 
   subscribeEventRegistrations: (orgId: string, callback: (regs: EventRegistration[]) => void) => {
@@ -1566,19 +1536,19 @@ export const KoinoniaDB = {
     return onSnapshot(q, (snapshot) => {
       const list = snapshot.docs.map(doc => mapEventRegistrationDoc(doc.data()));
       callback(list.sort((a, b) => b.created_at.getTime() - a.created_at.getTime()));
-    }, (err) => handleFirestoreError(err, 'list', 'event_registrations'));
+    }, (err) => handleDataError(err, 'list', 'event_registrations'));
   },
 
   saveEventRegistration: async (reg: EventRegistration) => {
     try {
-      const payload = sanitizeForFirestore({
+      const payload = sanitizePayload({
         ...reg,
         amount_paid: Number(reg.amount_paid) || 0,
-        checked_in_at: reg.checked_in_at ? parseFirestoreDate(reg.checked_in_at) : null,
-        created_at: parseFirestoreDate(reg.created_at)
+        checked_in_at: reg.checked_in_at ? parseDate(reg.checked_in_at) : null,
+        created_at: parseDate(reg.created_at)
       });
       await setDoc(doc(db, "event_registrations", reg.id), payload);
-    } catch (err) { handleFirestoreError(err, 'create', `event_registrations/${reg.id}`); }
+    } catch (err) { handleDataError(err, 'create', `event_registrations/${reg.id}`); }
   },
 
   submitPublicEventRegistration: async (data: {
@@ -1592,42 +1562,21 @@ export const KoinoniaDB = {
     registration_fee: number;
     notes?: string;
   }): Promise<EventRegistration> => {
-    const regId = 'reg_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    const ticketCode = `KNY-${Math.random().toString(36).slice(2, 6).toUpperCase()}-${String(Date.now()).slice(-3)}`;
-    const isFree = (Number(data.registration_fee) || 0) <= 0;
-
-    const reg: EventRegistration = {
-      id: regId,
-      org_id: data.org_id,
-      church_id: data.church_id,
+    // Valor, status e código do ingresso são definidos no banco a partir do evento.
+    const reg = await rpc<Record<string, any>>('register_for_event', {
       event_id: data.event_id,
-      event_title: data.event_title,
-      participant_name: data.participant_name.trim(),
-      participant_phone: data.participant_phone.trim(),
-      participant_email: data.participant_email?.trim() || '',
-      ticket_code: ticketCode,
-      payment_status: isFree ? 'FREE' : 'PENDING',
-      amount_paid: isFree ? 0 : Number(data.registration_fee),
-      status: 'CONFIRMED',
-      source: 'PUBLIC_PORTAL',
-      notes: data.notes?.trim() || '',
-      checked_in_at: null,
-      created_at: new Date()
-    };
-
-    try {
-      await setDoc(doc(db, "event_registrations", reg.id), sanitizeForFirestore(reg));
-      return reg;
-    } catch (err) {
-      handleFirestoreError(err, 'create', `event_registrations/${reg.id}`);
-      throw err;
-    }
+      participant_name: data.participant_name,
+      participant_phone: data.participant_phone,
+      participant_email: data.participant_email || null,
+      notes: data.notes || null,
+    });
+    return mapEventRegistrationDoc(reg);
   },
 
   deleteEventRegistration: async (id: string) => {
     try {
       await deleteDoc(doc(db, "event_registrations", id));
-    } catch (err) { handleFirestoreError(err, 'delete', `event_registrations/${id}`); }
+    } catch (err) { handleDataError(err, 'delete', `event_registrations/${id}`); }
   },
 
   submitPublicPrayerRequest: async (data: {
@@ -1640,9 +1589,17 @@ export const KoinoniaDB = {
     privacy: PrayerRequest['privacy'];
     request_text: string;
   }): Promise<PrayerRequest> => {
-    const reqId = 'pray_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    const payload: PrayerRequest = {
-      id: reqId,
+    const id = await rpc<string>('submit_prayer_request', {
+      church_id: data.church_id,
+      requester_name: data.requester_name,
+      request_text: data.request_text,
+      category: data.category || 'OTHER',
+      requester_phone: data.requester_phone || null,
+      urgency: data.urgency || 'NORMAL',
+      privacy: data.privacy || 'LEADERS_ONLY',
+    });
+    return {
+      id,
       org_id: data.org_id,
       church_id: data.church_id,
       requester_name: data.requester_name.trim(),
@@ -1654,16 +1611,8 @@ export const KoinoniaDB = {
       status: 'RECEIVED',
       prayer_count: 0,
       source: 'QR_CODE',
-      created_at: new Date()
+      created_at: new Date(),
     };
-
-    try {
-      await setDoc(doc(db, "prayer_requests", payload.id), sanitizeForFirestore(payload));
-      return payload;
-    } catch (err) {
-      handleFirestoreError(err, 'create', `prayer_requests/${payload.id}`);
-      throw err;
-    }
   },
 
   seedInitialChurchEvents: async (orgId: string, churchId: string) => {

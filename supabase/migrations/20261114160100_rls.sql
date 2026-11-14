@@ -6,6 +6,9 @@
 -- * Acesso por módulo segue as permissões dos níveis de acesso (contatos_view, financeiro_view…),
 --   não apenas "pertence à organização". Pedido de oração PASTOR_CONFIDENTIAL só para ADMIN/PASTOR.
 -- * Campos de cobrança da organização só mudam por SUPER_ADMIN.
+-- * Separação total entre organizações: SUPER_ADMIN administra o SaaS (organizações, igrejas,
+--   faturas) mas NÃO lê dados de módulo (membros, financeiro, pastoral…) de outras organizações,
+--   nem a equipe delas. Cada pessoa só vê dados da própria organização.
 --
 -- Funções auxiliares ficam no schema "app", que não é exposto pela API.
 
@@ -42,6 +45,12 @@ language sql stable security definer set search_path = '' as $$
       or exists (select 1 from public.users u where u.auth_user_id = (select auth.uid()) and u.org_id = target_org)
 $$;
 
+-- Pertence à organização, sem exceção para SUPER_ADMIN (dados de módulo e equipe).
+create or replace function app.is_member(target_org text) returns boolean
+language sql stable security definer set search_path = '' as $$
+  select exists (select 1 from public.users u where u.auth_user_id = (select auth.uid()) and u.org_id = target_org)
+$$;
+
 -- ADMIN ou PASTOR da organização (equivale ao isOrgAdmin do Firestore).
 create or replace function app.is_org_admin(target_org text) returns boolean
 language sql stable security definer set search_path = '' as $$
@@ -72,11 +81,12 @@ language sql immutable set search_path = '' as $$
   end
 $$;
 
--- Permissão de módulo. ADMIN e 'all' têm tudo; os demais papéis seguem users.permissions,
--- com fallback para os níveis padrão quando o perfil não tem lista própria.
+-- Permissão de módulo dentro da PRÓPRIA organização. ADMIN e 'all' têm tudo; os demais papéis
+-- seguem users.permissions, com fallback para os níveis padrão quando o perfil não tem lista própria.
+-- Sem exceção para SUPER_ADMIN: ele usa estas permissões só na organização a que pertence.
 create or replace function app.can(target_org text, permission text) returns boolean
 language sql stable security definer set search_path = '' as $$
-  select app.is_super_admin() or exists (
+  select exists (
     select 1 from public.users u
     where u.auth_user_id = (select auth.uid())
       and u.org_id = target_org
@@ -223,18 +233,21 @@ create policy organizations_update on public.organizations for update to authent
 create policy organizations_delete on public.organizations for delete to authenticated
   using (app.is_super_admin());
 
--- churches: leitura pública (portal e check-in de visitante usam dados da igreja)
-create policy churches_select on public.churches for select to anon, authenticated using (true);
+-- churches: só a própria organização (e SUPER_ADMIN, que provisiona inquilinos). O portal público
+-- e o check-in de visitante leem a igreja por public.get_public_church(id), sem listagem.
+create policy churches_select on public.churches for select to authenticated
+  using (app.in_org(org_id));
 create policy churches_insert on public.churches for insert to authenticated
-  with check (app.can(org_id, 'church_edit'));
+  with check (app.is_super_admin() or app.can(org_id, 'church_edit'));
 create policy churches_update on public.churches for update to authenticated
-  using (app.can(org_id, 'church_edit')) with check (app.can(org_id, 'church_edit'));
+  using (app.is_super_admin() or app.can(org_id, 'church_edit'))
+  with check (app.is_super_admin() or app.can(org_id, 'church_edit'));
 create policy churches_delete on public.churches for delete to authenticated
   using (app.is_org_admin(org_id) and app.can(org_id, 'church_edit'));
 
 -- users (perfis)
 create policy users_select on public.users for select to authenticated
-  using (auth_user_id = (select auth.uid()) or app.in_org(org_id));
+  using (auth_user_id = (select auth.uid()) or app.is_member(org_id));
 create policy users_insert on public.users for insert to authenticated
   with check (app.can(org_id, 'equipe_edit'));
 create policy users_update on public.users for update to authenticated
@@ -300,8 +313,8 @@ create policy prayer_requests_select on public.prayer_requests for select to aut
   app.can(org_id, 'pastoral_view')
   and (
     privacy = 'PUBLIC_CHURCH'
-    or (privacy = 'LEADERS_ONLY' and (app.is_super_admin() or (app.profile()).role not in ('VOLUNTEER', 'RECEPTION')))
-    or (privacy = 'PASTOR_CONFIDENTIAL' and (app.is_super_admin() or (app.profile()).role in ('ADMIN', 'PASTOR')))
+    or (privacy = 'LEADERS_ONLY' and (app.profile()).role not in ('VOLUNTEER', 'RECEPTION'))
+    or (privacy = 'PASTOR_CONFIDENTIAL' and (app.profile()).role in ('ADMIN', 'PASTOR', 'SUPER_ADMIN'))
   )
 );
 create policy prayer_requests_insert on public.prayer_requests for insert to authenticated
@@ -320,9 +333,9 @@ create policy saas_invoices_write on public.saas_invoices for all to authenticat
   using (app.is_super_admin()) with check (app.is_super_admin());
 
 -- ---------------------------------------------------------------- privilégios de tabela
--- anon não acessa tabelas diretamente, exceto leitura de churches e church_events (filtrada por RLS).
+-- anon não acessa tabelas diretamente, exceto leitura de church_events (RLS: só eventos públicos).
 revoke all on all tables in schema public from anon;
-grant select on public.churches, public.church_events to anon;
+grant select on public.church_events to anon;
 grant select, insert, update, delete on all tables in schema public to authenticated;
 
 -- ---------------------------------------------------------------- Realtime (substitui onSnapshot)

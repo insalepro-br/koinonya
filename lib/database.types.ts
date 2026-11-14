@@ -673,7 +673,35 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "new_id":
+            "claim_profile":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "auth_user_id": string | null,
+"avatar": string | null,
+"church_id": string | null,
+"created_at": string,
+"duty": string | null,
+"email": string,
+"id": string,
+"lgpd_consent_date": string | null,
+"name": string,
+"org_id": string | null,
+"permissions": (string)[],
+"role": string,
+"status": string | null,
+"whatsapp": string | null
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "users"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"get_public_church":
+{ Args: { "church_id": string }; Returns: {
+              "address": string,"city": string,"email": string,"id": string,"logo_url": string,"name": string,"org_id": string,"pastor_name": string,"phone": string,"state": string
+            }[]
+                           },
+"new_id":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
 "onboard_organization":

@@ -7,7 +7,7 @@ Primeira versão do banco Postgres que substitui o Firestore. Feita a partir da 
 | [20261114160000_core_schema.sql](../../supabase/migrations/20261114160000_core_schema.sql) | 22 tabelas, FKs, CHECKs, índices |
 | [20261114160100_rls.sql](../../supabase/migrations/20261114160100_rls.sql) | RLS, permissões por módulo, travas por trigger, Realtime |
 | [20261114160200_public_api.sql](../../supabase/migrations/20261114160200_public_api.sql) | Onboarding, fluxos públicos, vínculo de login |
-| [rls.test.sql](../../supabase/tests/database/rls.test.sql) | 25 testes pgTAP (`pnpm db:test`) |
+| [rls.test.sql](../../supabase/tests/database/rls.test.sql) | 36 testes pgTAP (`pnpm db:test`) |
 | [lib/database.types.ts](../../lib/database.types.ts) | Tipos gerados (`pnpm db:types`) |
 
 ## Decisões
@@ -25,7 +25,7 @@ Primeira versão do banco Postgres que substitui o Firestore. Feita a partir da 
 | --- | --- |
 | Qualquer usuário logado criava o próprio perfil com qualquer `role` e `org_id`, inclusive `SUPER_ADMIN` | Perfil nasce só pelo `onboard_organization()` (vira ADMIN da própria org nova) ou por admin com `equipe_edit` |
 | Admin da organização podia promover alguém a `SUPER_ADMIN` | Só `SUPER_ADMIN` concede `SUPER_ADMIN` |
-| Qualquer membro da organização lia tudo (financeiro, pedidos confidenciais) | Leitura e escrita seguem as permissões do nível de acesso (`financeiro_view`, `pastoral_view`…); `PASTOR_CONFIDENTIAL` só ADMIN/PASTOR |
+| Qualquer membro da organização lia tudo (financeiro, pedidos confidenciais); SUPER_ADMIN lia todas as organizações | Leitura e escrita seguem as permissões do nível de acesso (`financeiro_view`, `pastoral_view`…); `PASTOR_CONFIDENTIAL` só ADMIN/PASTOR; SUPER_ADMIN administra organizações e faturas, mas não lê dados de módulo nem equipe de outras organizações |
 | Visitante anônimo gravava direto em `members`, `prayer_requests`, `event_registrations` | Anônimo só chama `submit_visitor_checkin`, `submit_prayer_request`, `register_for_event`: validam entrada e definem status, valor e código no servidor; inscrição respeita a capacidade com lock |
 
 Permissão efetiva: `SUPER_ADMIN` e `ADMIN` têm tudo; `'all'` em `users.permissions` também; caso contrário vale a lista do perfil, ou a lista padrão do papel quando o perfil não tem lista própria.
@@ -48,6 +48,27 @@ pnpm db:test              # testes de RLS
 
 Studio: http://127.0.0.1:54323
 
-## Próximo passo
+## App no Supabase
 
-Trocar `services/db.ts` (Firestore + `onSnapshot`) por `supabase-js` + Realtime, e `LoginScreen` pelo Supabase Auth com Google. O servidor já aceita `AUTH_PROVIDER=supabase`.
+O front não usa mais Firebase. `services/db.ts` manteve a mesma interface para os componentes e passou a usar [lib/dataStore.ts](../../lib/dataStore.ts) (Supabase + Realtime). Login é Supabase Auth (e-mail com confirmação obrigatória e Google).
+
+- **Tempo real:** INSERT/UPDATE via `postgres_changes` (o Realtime aplica o RLS por assinante); exclusões via canal privado `org:<org_id>` com RLS em `realtime.messages` ([20261114160300_realtime_isolation.sql](../../supabase/migrations/20261114160300_realtime_isolation.sql)). O evento só dispara uma releitura sob RLS; nunca é usado como dado.
+- **Colunas:** o adaptador grava só colunas conhecidas ([lib/db-columns.ts](../../lib/db-columns.ts), gerado por `pnpm db:types`). Campos extras, como `password` do formulário de equipe, são descartados.
+- **Servidor:** valida o JWT do Supabase por JWKS e recusa a chave publicável como token. CSP ligada em produção, limitada a Supabase, ViaCEP e Google Fonts.
+- **Isolamento ponta a ponta:** `pnpm test:isolation` cria duas organizações e confere leitura, escrita, exclusão, tempo real e acesso anônimo pelo mesmo caminho do app.
+
+## Login com Google
+
+Não depende do Firebase. Precisa de um OAuth Client do Google (Google Cloud Console → Google Auth Platform → Clients → Web):
+
+| Ambiente | Redirect URI autorizado | Onde configurar |
+| --- | --- | --- |
+| Local | `http://127.0.0.1:54321/auth/v1/callback` | `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` no ambiente + `enabled = true` em `[auth.external.google]` do `supabase/config.toml`, depois `pnpm db:stop && pnpm db:start` |
+| Nuvem | `https://<ref>.supabase.co/auth/v1/callback` | Painel do Supabase → Authentication → Sign In / Providers → Google |
+
+Origens JavaScript autorizadas: `http://localhost:3000` (local) e o domínio do app (staging/produção). No Supabase da nuvem, cadastrar também o domínio do app em Authentication → URL Configuration.
+
+## Pendências
+
+- Projeto Supabase na nuvem para staging e produção; depois aplicar `.railway/railway.ts` (`railway config apply`) e publicar.
+- Normalizar as estruturas em `jsonb`/`text[]` e trocar `services/db.ts` por consultas tipadas (`lib/database.types.ts`) módulo a módulo.

@@ -63,8 +63,8 @@ const ModuleFallback = ({ fullScreen = false }: { fullScreen?: boolean }) => (
 import { Member, MemberStage, SystemUser, ScheduleEvent, EventType, Organization, PipelineStage, Church, UserRole, Cell, CellMeeting, AutomationRule, FinancialTransaction, FinancialCampaign, AccessLevel, UserPresenceStatus, DiscipleshipTrack, MemberTrackProgress, MessageLog, BroadcastCampaign, Ministry, MinistrySchedule, ServiceCheckin, PrayerRequest, PastoralVisit, SaaSInvoice, ChurchEvent, EventRegistration } from './types';
 import { DEFAULT_STAGES, DEFAULT_ACCESS_LEVELS, ROLE_TRANSLATIONS, USER_STATUS_CONFIG } from './constants';
 import { KoinoniaDB } from './services/db';
-import { auth } from './lib/firebase';
-import { onAuthStateChanged, signOut, updatePassword } from 'firebase/auth';
+import { supabase } from './lib/supabase';
+import type { Session } from '@supabase/supabase-js';
 
 const navItems = [
   { id: 'analytics', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
@@ -191,16 +191,19 @@ const App: React.FC = () => {
     if (!currentUser) return;
     const { password, ...profileUpdates } = updatedData;
     if (password) {
-      if (!auth.currentUser) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
         throw new Error('Sessão de autenticação expirada. Faça login novamente.');
       }
-      try {
-        await updatePassword(auth.currentUser, password);
-      } catch (err: any) {
-        if (err?.code === 'auth/requires-recent-login') {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) {
+        if (error.code === 'reauthentication_needed' || error.code === 'session_expired') {
           throw new Error('Por segurança, saia e faça login novamente antes de alterar sua senha.');
         }
-        throw new Error(err?.message || 'Não foi possível atualizar a senha.');
+        if (error.code === 'weak_password') {
+          throw new Error('Senha fraca: use pelo menos 8 caracteres.');
+        }
+        throw new Error(error.message || 'Não foi possível atualizar a senha.');
       }
     }
 
@@ -572,20 +575,24 @@ const App: React.FC = () => {
   }, [isDarkMode]);
 
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+    let cancelled = false;
+
+    const loadSession = async (session: Session | null) => {
       try {
-        if (user) {
-          console.log("Auth state changed: user logged in", user.uid);
-          const profile = await KoinoniaDB.getUserProfile(user.uid);
+        if (session) {
+          // Perfil pelo vínculo com o login (auth_user_id); o RLS só devolve o próprio perfil.
+          const profile = await KoinoniaDB.getMyProfile();
+          if (cancelled) return;
           if (profile) {
             setCurrentUser(profile);
-            const org = await KoinoniaDB.getOrganization(profile.org_id);
+            const org = profile.org_id ? await KoinoniaDB.getOrganization(profile.org_id) : null;
+            if (cancelled) return;
             setOrganization(org);
             setIsLoggedIn(true);
           } else {
-            console.warn("Profile not found for authenticated user:", user.uid);
-            // Don't set isLoggedIn(false) yet, let LoginScreen handle registration completion if auth is present
-            // setIsLoggedIn(false); // Removed to avoid race with LoginScreen
+            // Sessão sem perfil: a LoginScreen detecta e mostra o cadastro da organização.
+            setIsLoggedIn(false);
+            setCurrentUser(null);
           }
         } else {
           setIsLoggedIn(false);
@@ -596,11 +603,21 @@ const App: React.FC = () => {
         console.error("Auth initialization error:", error);
         setIsLoggedIn(false);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
+    };
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      // Renovação de token não muda o usuário; evita recarregar perfil a cada hora.
+      if (event === 'TOKEN_REFRESHED') return;
+      // Fora do callback: chamadas ao Supabase dentro dele podem travar o cliente.
+      setTimeout(() => void loadSession(session), 0);
     });
 
-    return () => unsubscribeAuth();
+    return () => {
+      cancelled = true;
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   // Data Subscriptions
@@ -729,7 +746,7 @@ const App: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await supabase.auth.signOut();
     setIsLoggedIn(false);
     setCurrentUser(null);
     setOrganization(null);

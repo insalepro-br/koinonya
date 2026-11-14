@@ -21,12 +21,40 @@ const app = express();
 // Railway/proxies: usa o IP real do cliente em req.ip.
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
+// Origens externas permitidas no navegador: Supabase (API + Realtime), ViaCEP e Google Fonts.
+// Em dev o Vite injeta scripts inline e usa WebSocket próprio, então a CSP vale só em produção.
+const SUPABASE_ORIGIN = (() => {
+  try {
+    return new URL(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').origin;
+  } catch {
+    return '';
+  }
+})();
+const SUPABASE_WS = SUPABASE_ORIGIN.replace(/^http/, 'ws');
+
 app.use(
   helmet({
-    // CSP fica para quando as origens externas (Firebase/Supabase, fontes, ViaCEP) estiverem fechadas.
-    contentSecurityPolicy: false,
-    // signInWithPopup do Google precisa conversar com a janela de login.
-    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+    contentSecurityPolicy: IS_PROD
+      ? {
+          useDefaults: false,
+          directives: {
+            'default-src': ["'self'"],
+            'script-src': ["'self'"],
+            'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+            'font-src': ["'self'", 'https://fonts.gstatic.com'],
+            'img-src': ["'self'", 'data:', 'blob:', 'https:'],
+            'connect-src': ["'self'", SUPABASE_ORIGIN, SUPABASE_WS, 'https://viacep.com.br'].filter(Boolean),
+            'worker-src': ["'self'"],
+            'manifest-src': ["'self'"],
+            'frame-ancestors': ["'none'"],
+            'base-uri': ["'self'"],
+            'form-action': ["'self'"],
+            'object-src': ["'none'"],
+          },
+        }
+      : false,
+    // Login com Google é por redirecionamento (Supabase), sem popup: isolamento total da janela.
+    crossOriginOpenerPolicy: { policy: 'same-origin' },
   }),
 );
 app.use(express.json({ limit: '100kb' }));

@@ -2,12 +2,10 @@ import type { NextFunction, Request, Response } from 'express';
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from 'jose';
 
 /**
- * Verificação de JWT por JWKS, sem credenciais de servidor.
+ * Verificação do JWT do Supabase Auth por JWKS (chaves públicas), sem segredo no servidor.
+ * SUPABASE_URL obrigatório (ex.: https://<ref>.supabase.co ou http://127.0.0.1:54321 no local).
  *
- * AUTH_PROVIDER=firebase (padrão enquanto o front usa Firebase Auth)
- *   FIREBASE_PROJECT_ID obrigatório.
- * AUTH_PROVIDER=supabase (após a migração)
- *   SUPABASE_URL obrigatório.
+ * Só aceita tokens de usuário logado (role "authenticated"): a chave publicável/anon não passa.
  */
 export interface AuthUser {
   uid: string;
@@ -24,29 +22,13 @@ declare global {
   }
 }
 
-interface VerifierConfig {
-  jwksUrl: string;
-  issuer: string;
-  audience: string;
-}
-
-function resolveConfig(): VerifierConfig {
-  const provider = (process.env.AUTH_PROVIDER || 'firebase').toLowerCase();
-  if (provider === 'supabase') {
-    const url = process.env.SUPABASE_URL?.replace(/\/$/, '');
-    if (!url) throw new Error('SUPABASE_URL é obrigatório com AUTH_PROVIDER=supabase');
-    return {
-      jwksUrl: `${url}/auth/v1/.well-known/jwks.json`,
-      issuer: `${url}/auth/v1`,
-      audience: 'authenticated',
-    };
-  }
-  const projectId = process.env.FIREBASE_PROJECT_ID;
-  if (!projectId) throw new Error('FIREBASE_PROJECT_ID é obrigatório com AUTH_PROVIDER=firebase');
+function resolveConfig() {
+  const url = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL)?.replace(/\/$/, '');
+  if (!url) throw new Error('SUPABASE_URL é obrigatório para validar o login.');
   return {
-    jwksUrl: 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com',
-    issuer: `https://securetoken.google.com/${projectId}`,
-    audience: projectId,
+    jwksUrl: `${url}/auth/v1/.well-known/jwks.json`,
+    issuer: `${url}/auth/v1`,
+    audience: 'authenticated',
   };
 }
 
@@ -54,7 +36,7 @@ const config = resolveConfig();
 const jwks = createRemoteJWKSet(new URL(config.jwksUrl));
 
 export function authInfo() {
-  return { issuer: config.issuer, audience: config.audience };
+  return { provider: 'supabase', issuer: config.issuer, audience: config.audience };
 }
 
 export async function verifyBearer(header: string | undefined): Promise<AuthUser | null> {
@@ -64,8 +46,9 @@ export async function verifyBearer(header: string | undefined): Promise<AuthUser
   const { payload } = await jwtVerify(token, jwks, {
     issuer: config.issuer,
     audience: config.audience,
+    algorithms: ['ES256', 'RS256'],
   });
-  if (!payload.sub) return null;
+  if (!payload.sub || payload.role !== 'authenticated') return null;
   return {
     uid: payload.sub,
     email: typeof payload.email === 'string' ? payload.email : undefined,

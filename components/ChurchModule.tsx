@@ -2,8 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Church as ChurchIcon, Save, MapPin, Phone, Mail, Camera, Search, Loader2, Trash2, ChevronDown, QrCode, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Church, SystemUser } from '../types';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db, doc, getDoc } from '../lib/dataStore';
 
 interface ChurchModuleProps {
   churchId: string;

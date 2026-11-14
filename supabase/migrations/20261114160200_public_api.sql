@@ -26,6 +26,51 @@ create trigger on_auth_user_confirmed after update of email_confirmed_at on auth
   for each row when (old.email_confirmed_at is null and new.email_confirmed_at is not null)
   execute function app.link_profile_on_auth();
 
+-- Vincula o login atual a um perfil existente com o mesmo e-mail (ex.: membro da equipe cadastrado
+-- pelo admin depois que a pessoa já tinha conta). Só com e-mail confirmado. Retorna o perfil ou null.
+create or replace function public.claim_profile() returns public.users
+language plpgsql security definer set search_path = '' as $$
+declare
+  uid     uuid := (select auth.uid());
+  au      auth.users;
+  profile public.users;
+begin
+  if uid is null then
+    raise exception 'Login necessário.' using errcode = '42501';
+  end if;
+  select * into profile from public.users where auth_user_id = uid;
+  if found then
+    return profile;
+  end if;
+  select * into au from auth.users where id = uid;
+  if au.email is null or au.email_confirmed_at is null then
+    return null;
+  end if;
+  update public.users u set auth_user_id = uid
+   where lower(u.email) = lower(au.email) and u.auth_user_id is null
+  returning * into profile;
+  return profile;
+end;
+$$;
+
+revoke all on function public.claim_profile() from public, anon;
+grant execute on function public.claim_profile() to authenticated;
+
+-- ---------------------------------------------------------------- dados públicos da igreja
+-- Portal e check-in de visitante: uma igreja por id, só campos de contato. Sem listagem.
+create or replace function public.get_public_church(church_id text)
+returns table (id text, org_id text, name text, address text, city text, state text, phone text,
+               email text, pastor_name text, logo_url text)
+language sql stable security definer set search_path = '' as $$
+  select c.id, c.org_id, c.name, c.address, c.city, c.state, c.phone, c.email, c.pastor_name, c.logo_url
+    from public.churches c
+    join public.organizations o on o.id = c.org_id
+   where c.id = get_public_church.church_id and o.active
+$$;
+
+revoke all on function public.get_public_church(text) from public;
+grant execute on function public.get_public_church(text) to anon, authenticated;
+
 -- ---------------------------------------------------------------- onboarding
 -- Cria organização, igreja e perfil ADMIN para o usuário logado, numa transação.
 create or replace function public.onboard_organization(
@@ -99,7 +144,8 @@ declare
   member_id text := public.new_id();
   notes     text;
 begin
-  select * into church from public.churches c where c.id = submit_visitor_checkin.church_id;
+  select c.* into church from public.churches c join public.organizations o on o.id = c.org_id
+   where c.id = submit_visitor_checkin.church_id and o.active;
   if not found then
     raise exception 'Igreja não encontrada.' using errcode = 'P0002';
   end if;
@@ -122,10 +168,18 @@ begin
   );
 
   insert into public.members (id, org_id, church_id, name, phone, email, gender, cep, address, neighborhood, city,
-                              stage, channel, engagement_score, notes)
+                              stage, channel, engagement_score, notes, interests)
   values (member_id, church.org_id, church.id, trim(name), trim(phone), coalesce(trim(email), ''),
           left(gender, 20), left(cep, 9), left(address, 200), left(neighborhood, 120), left(city, 120),
-          'NEW', 'QR_CODE', 50, nullif(notes, ''));
+          'NEW', 'QR_CODE', 50, nullif(notes, ''),
+          case when nullif(trim(prayer_request), '') is not null then 'Oração' else 'Acolhimento' end);
+
+  if nullif(trim(prayer_request), '') is not null then
+    insert into public.prayer_requests (org_id, church_id, member_id, requester_name, requester_phone, category,
+                                        urgency, privacy, request_text, status, prayer_count, source)
+    values (church.org_id, church.id, member_id, trim(name), left(trim(phone), 32), 'OTHER',
+            'NORMAL', 'LEADERS_ONLY', left(trim(prayer_request), 2000), 'RECEIVED', 0, 'QR_CODE');
+  end if;
 
   return member_id;
 end;
@@ -146,7 +200,8 @@ declare
   church public.churches;
   new_id text := public.new_id();
 begin
-  select * into church from public.churches c where c.id = submit_prayer_request.church_id;
+  select c.* into church from public.churches c join public.organizations o on o.id = c.org_id
+   where c.id = submit_prayer_request.church_id and o.active;
   if not found then
     raise exception 'Igreja não encontrada.' using errcode = 'P0002';
   end if;

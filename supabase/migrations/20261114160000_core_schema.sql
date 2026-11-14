@@ -429,9 +429,10 @@ create table public.saas_invoices (
   reference_month text not null check (reference_month ~ '^\d{4}-\d{2}$'),
   pix_code        text,
   notes           text,
-  created_at      timestamptz not null default now(),
-  unique (org_id, reference_month)
+  created_at      timestamptz not null default now()
 );
+-- Uma fatura ativa por organização e competência (canceladas podem ser refeitas).
+create unique index saas_invoices_org_month_uidx on public.saas_invoices (org_id, reference_month) where status <> 'CANCELED';
 
 -- ---------------------------------------------------------------- eventos com inscrição
 create table public.church_events (

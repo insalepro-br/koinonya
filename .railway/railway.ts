@@ -20,9 +20,12 @@ export default defineRailway(() => {
     },
     // Sem NODE_ENV aqui: no build ele faria o pnpm pular devDependencies (vite, esbuild, tailwind).
     // O servidor já se marca como produção no build (__PROD_BUILD__).
+    // Supabase: URL e chave publicável são públicas por natureza (vão para o navegador), mas ficam
+    // no painel para trocar de projeto sem commit. VITE_* entram no build do front.
     env: {
-      AUTH_PROVIDER: 'firebase',
-      FIREBASE_PROJECT_ID: 'gen-lang-client-0519033383',
+      SUPABASE_URL: preserve(),
+      VITE_SUPABASE_URL: preserve(),
+      VITE_SUPABASE_PUBLISHABLE_KEY: preserve(),
       GEMINI_MODEL: 'gemini-4-hydrogen',
       // Segredo: definido no painel/CLI do Railway, nunca no código. preserve() mantém o valor já salvo.
       GEMINI_API_KEY: preserve(),

@@ -1,4 +1,4 @@
-import { auth } from '../lib/firebase';
+import { getAccessToken } from '../lib/supabase';
 
 /**
  * Client-side proxy service for AI-powered humanized communication.
@@ -10,11 +10,9 @@ const getAuthHeaders = async (): Promise<Record<string, string>> => {
     'Content-Type': 'application/json',
   };
   try {
-    if (auth.currentUser) {
-      const token = await auth.currentUser.getIdToken();
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
+    const token = await getAccessToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
   } catch (err) {
     console.warn("Could not retrieve auth token for AI request:", err);

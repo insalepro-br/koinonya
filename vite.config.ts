@@ -12,7 +12,7 @@ import tailwindConfig from './tailwind.config';
  */
 const VENDOR_CHUNKS: Record<string, RegExp> = {
   react: /\/node_modules\/(react|react-dom|scheduler)\//,
-  firebase: /\/node_modules\/(firebase|@firebase|idb)\//,
+  supabase: /\/node_modules\/(@supabase)\//,
   charts: /\/node_modules\/(recharts|d3-[^/]+|victory-vendor|@reduxjs|redux|immer|reselect|decimal\.js-light)\//,
 };
 

@@ -2,7 +2,7 @@
 -- Fixtures próprias, tudo dentro de uma transação desfeita no fim.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(25);
+select plan(36);
 
 -- ---------------------------------------------------------------- fixtures (como postgres)
 insert into auth.users (id, email, aud, role, email_confirmed_at) values
@@ -10,19 +10,27 @@ insert into auth.users (id, email, aud, role, email_confirmed_at) values
   ('00000000-0000-0000-0000-0000000000a2', 'vol@a.test',       'authenticated', 'authenticated', now()),
   ('00000000-0000-0000-0000-0000000000b1', 'admin@b.test',     'authenticated', 'authenticated', now()),
   ('00000000-0000-0000-0000-0000000000c1', 'novo@c.test',      'authenticated', 'authenticated', now()),
-  ('00000000-0000-0000-0000-0000000000f1', 'fin@a.test',       'authenticated', 'authenticated', now());
+  ('00000000-0000-0000-0000-0000000000f1', 'fin@a.test',       'authenticated', 'authenticated', now()),
+  ('00000000-0000-0000-0000-0000000000e1', 'depois@a.test',    'authenticated', 'authenticated', now()),
+  ('00000000-0000-0000-0000-00000000005a', 'saas@s.test',      'authenticated', 'authenticated', now());
 
 insert into public.organizations (id, name, owner_id, subscription_status) values
   ('org_a', 'Org A', 'u_admin_a', 'ACTIVE'),
-  ('org_b', 'Org B', 'u_admin_b', 'ACTIVE');
+  ('org_b', 'Org B', 'u_admin_b', 'ACTIVE'),
+  ('org_s', 'Operação SaaS', 'u_saas', 'ACTIVE');
 insert into public.churches (id, org_id, name) values
   ('ch_a', 'org_a', 'Igreja A'),
-  ('ch_b', 'org_b', 'Igreja B');
+  ('ch_b', 'org_b', 'Igreja B'),
+  ('ch_s', 'org_s', 'Sede SaaS');
 insert into public.users (id, auth_user_id, org_id, church_id, name, email, role, permissions) values
   ('u_admin_a', '00000000-0000-0000-0000-0000000000a1', 'org_a', 'ch_a', 'Admin A', 'admin@a.test', 'ADMIN', '{all}'),
   ('u_vol_a',   '00000000-0000-0000-0000-0000000000a2', 'org_a', 'ch_a', 'Vol A',   'vol@a.test',   'VOLUNTEER', '{}'),
   ('u_admin_b', '00000000-0000-0000-0000-0000000000b1', 'org_b', 'ch_b', 'Admin B', 'admin@b.test', 'ADMIN', '{all}'),
-  ('u_fin_a',   '00000000-0000-0000-0000-0000000000f1', 'org_a', 'ch_a', 'Tesoureiro', 'fin@a.test', 'LEADER', '{financeiro_view}');
+  ('u_fin_a',   '00000000-0000-0000-0000-0000000000f1', 'org_a', 'ch_a', 'Tesoureiro', 'fin@a.test', 'LEADER', '{financeiro_view}'),
+  ('u_saas',    '00000000-0000-0000-0000-00000000005a', 'org_s', 'ch_s', 'Operador SaaS', 'saas@s.test', 'SUPER_ADMIN', '{all}');
+-- Cadastrado pela equipe DEPOIS de a pessoa já ter conta: o trigger não vincula; claim_profile vincula.
+insert into public.users (id, org_id, church_id, name, email, role) values
+  ('team_later', 'org_a', 'ch_a', 'Chegou Depois', 'depois@a.test', 'VOLUNTEER');
 insert into public.members (id, org_id, church_id, name) values
   ('m_a1', 'org_a', 'ch_a', 'Membro A1'),
   ('m_b1', 'org_b', 'ch_b', 'Membro B1');
@@ -83,6 +91,20 @@ select throws_ok(
   $$ update public.members set org_id = 'org_b' where id = 'm_a1' $$,
   '42501', null, 'org_id é imutável');
 
+select is((select count(*)::int from public.churches where org_id = 'org_b'), 0, 'admin A não vê igrejas da org B');
+select is((select count(*)::int from public.users where org_id = 'org_b'), 0, 'admin A não vê equipe da org B');
+
+-- ---------------------------------------------------------------- SUPER_ADMIN (operação do SaaS)
+select pg_temp.login('00000000-0000-0000-0000-00000000005a');
+select ok((select count(*) from public.organizations where id in ('org_a', 'org_b')) = 2, 'SUPER_ADMIN vê as organizações');
+select is((select count(*)::int from public.members where org_id in ('org_a', 'org_b')), 0, 'SUPER_ADMIN não lê membros de outras organizações');
+select is((select count(*)::int from public.financial_transactions where org_id = 'org_a'), 0, 'SUPER_ADMIN não lê financeiro de outras organizações');
+select is((select count(*)::int from public.users where org_id = 'org_a'), 0, 'SUPER_ADMIN não lê equipe de outras organizações');
+
+-- ---------------------------------------------------------------- vínculo tardio
+select pg_temp.login('00000000-0000-0000-0000-0000000000e1');
+select is((select (public.claim_profile()).id), 'team_later', 'claim_profile vincula perfil cadastrado depois da conta');
+
 -- ---------------------------------------------------------------- voluntário da org A
 select pg_temp.login('00000000-0000-0000-0000-0000000000a2');
 select is((select count(*)::int from public.members), 1, 'voluntário vê contatos');
@@ -120,10 +142,16 @@ reset role;
 set local role anon;
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 select is((select count(*)::int from public.church_events where church_id = 'ch_a'), 1, 'anônimo vê só evento público');
+select throws_ok($$ select count(*) from public.churches $$, '42501', null, 'anônimo não lista igrejas');
+select is((select name from public.get_public_church('ch_a')), 'Igreja A', 'anônimo lê a igreja pelo id');
 select throws_ok($$ select count(*) from public.members $$, '42501', null, 'anônimo não lê membros');
 select is((select (public.register_for_event('ev_pub', 'Maria Silva', '11988887777')).payment_status), 'FREE',
   'inscrição pública em evento gratuito');
 
+select ok(public.submit_visitor_checkin('ch_a', 'Visitante Teste', '11977776666', prayer_request => 'Pela família') is not null,
+  'check-in público de visitante');
 reset role;
+select is((select count(*)::int from public.prayer_requests where church_id = 'ch_a' and source = 'QR_CODE'), 1,
+  'check-in com pedido gera pedido de oração');
 select * from finish();
 rollback;

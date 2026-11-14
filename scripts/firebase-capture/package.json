@@ -8,7 +8,8 @@
     "capture": "tsx capture.ts",
     "typecheck": "tsc --noEmit",
     "pack:cloudshell": "tsx pack-cloudshell.ts",
-    "import:local": "tsx import-local.ts"
+    "import:local": "tsx import-local.ts",
+    "gen:columns": "tsx gen-db-columns.ts"
   },
   "dependencies": {
     "firebase-admin": "^13.0.0",
