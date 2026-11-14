@@ -7,14 +7,17 @@
   "scripts": {
     "capture": "tsx capture.ts",
     "typecheck": "tsc --noEmit",
-    "pack:cloudshell": "tsx pack-cloudshell.ts"
+    "pack:cloudshell": "tsx pack-cloudshell.ts",
+    "import:local": "tsx import-local.ts"
   },
   "dependencies": {
     "firebase-admin": "^13.0.0",
-    "google-auth-library": "^9.15.0"
+    "google-auth-library": "^9.15.0",
+    "pg": "^8.23.1"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",
+    "@types/pg": "^8.23.1",
     "tsx": "^4.23.15",
     "typescript": "~5.8.2"
   },

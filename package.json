@@ -15,7 +15,11 @@
     "db:stop": "supabase stop",
     "db:status": "supabase status",
     "db:reset": "supabase db reset",
-    "capture:firebase": "pnpm --dir scripts/firebase-capture capture"
+    "capture:firebase": "pnpm --dir scripts/firebase-capture capture",
+    "db:test": "supabase test db",
+    "db:lint": "supabase db lint --level warning",
+    "db:types": "supabase gen types typescript --local > lib/database.types.ts",
+    "db:import:firebase": "pnpm --dir scripts/firebase-capture import:local --reset"
   },
   "dependencies": {
     "@google/genai": "^3.0.0",

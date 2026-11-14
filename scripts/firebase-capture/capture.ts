@@ -557,9 +557,15 @@ await section('auth.config', async () => {
   } catch (e) {
     idps = { error: errorMessage(e) };
   }
+  // hashConfig.signerKey/saltSeparator permitem verificar hashes de senha: segredo, não sai no export.
+  const signIn = cfg.signIn ? { ...cfg.signIn } : cfg.signIn;
+  if (signIn?.hashConfig) {
+    const { signerKey: _key, saltSeparator: _sep, ...hashParams } = signIn.hashConfig;
+    signIn.hashConfig = { ...hashParams, signerKey: REDACTED, saltSeparator: REDACTED };
+  }
   await out('auth/config.json', {
     authorized_domains: cfg.authorizedDomains,
-    sign_in: cfg.signIn,
+    sign_in: signIn,
     multi_tenant: cfg.multiTenant,
     notification: cfg.notification,
     blocking_functions: cfg.blockingFunctions,
