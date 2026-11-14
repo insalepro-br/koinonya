@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
 import { 
   LayoutDashboard, 
   Columns, 
@@ -27,31 +27,39 @@ import {
   HeartHandshake,
   Ticket
 } from 'lucide-react';
-import KanbanBoard from './components/KanbanBoard';
-import AnalyticsDashboard from './components/AnalyticsDashboard';
-import AutomationSettings from './components/AutomationSettings';
-import ScheduleModule from './components/ScheduleModule';
 import MemberModal from './components/MemberModal';
 import EventModal from './components/EventModal';
-import ContactsModule from './components/ContactsModule';
-import CellsModule from './components/CellsModule';
-import FinancialModule from './components/FinancialModule';
 import LoginScreen from './components/LoginScreen';
-import ChurchModule from './components/ChurchModule';
-import TeamModule from './components/TeamModule';
-import SettingsModule from './components/SettingsModule';
-import PublicVisitorCheckin from './components/PublicVisitorCheckin';
-import VisitorQrModal from './components/VisitorQrModal';
 import UserProfileModal from './components/UserProfileModal';
-import SaaSManagementModule from './components/SaaSManagementModule';
-import DiscipleshipModule from './components/DiscipleshipModule';
-import MinistriesModule from './components/MinistriesModule';
-import CheckinModule from './components/CheckinModule';
-import PastoralCareModule from './components/PastoralCareModule';
-import EventsHubModule from './components/EventsHubModule';
-import PublicChurchPortal from './components/PublicChurchPortal';
 import SubscriptionGate from './components/SubscriptionGate';
 import { PWAInstallButton, OfflineIndicator } from './components/PWAInstallButton';
+
+// Módulos carregados sob demanda: cada um vira um chunk próprio no build.
+const KanbanBoard = lazy(() => import('./components/KanbanBoard'));
+const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard'));
+const AutomationSettings = lazy(() => import('./components/AutomationSettings'));
+const ScheduleModule = lazy(() => import('./components/ScheduleModule'));
+const ContactsModule = lazy(() => import('./components/ContactsModule'));
+const CellsModule = lazy(() => import('./components/CellsModule'));
+const FinancialModule = lazy(() => import('./components/FinancialModule'));
+const ChurchModule = lazy(() => import('./components/ChurchModule'));
+const TeamModule = lazy(() => import('./components/TeamModule'));
+const SettingsModule = lazy(() => import('./components/SettingsModule'));
+const PublicVisitorCheckin = lazy(() => import('./components/PublicVisitorCheckin'));
+const VisitorQrModal = lazy(() => import('./components/VisitorQrModal'));
+const SaaSManagementModule = lazy(() => import('./components/SaaSManagementModule'));
+const DiscipleshipModule = lazy(() => import('./components/DiscipleshipModule'));
+const MinistriesModule = lazy(() => import('./components/MinistriesModule'));
+const CheckinModule = lazy(() => import('./components/CheckinModule'));
+const PastoralCareModule = lazy(() => import('./components/PastoralCareModule'));
+const EventsHubModule = lazy(() => import('./components/EventsHubModule'));
+const PublicChurchPortal = lazy(() => import('./components/PublicChurchPortal'));
+
+const ModuleFallback = ({ fullScreen = false }: { fullScreen?: boolean }) => (
+  <div className={`${fullScreen ? 'h-screen' : 'h-full'} w-full flex items-center justify-center bg-slate-50 dark:bg-slate-900`}>
+    <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+  </div>
+);
 import { Member, MemberStage, SystemUser, ScheduleEvent, EventType, Organization, PipelineStage, Church, UserRole, Cell, CellMeeting, AutomationRule, FinancialTransaction, FinancialCampaign, AccessLevel, UserPresenceStatus, DiscipleshipTrack, MemberTrackProgress, MessageLog, BroadcastCampaign, Ministry, MinistrySchedule, ServiceCheckin, PrayerRequest, PastoralVisit, SaaSInvoice, ChurchEvent, EventRegistration } from './types';
 import { DEFAULT_STAGES, DEFAULT_ACCESS_LEVELS, ROLE_TRANSLATIONS, USER_STATUS_CONFIG } from './constants';
 import { KoinoniaDB } from './services/db';
@@ -916,14 +924,16 @@ const App: React.FC = () => {
   if (isCheckinRoute) {
     const params = new URLSearchParams(window.location.search);
     return (
-      <PublicVisitorCheckin 
-        churchId={params.get('churchId') || params.get('church') || currentUser?.church_id || undefined}
-        orgId={params.get('orgId') || params.get('org') || currentUser?.org_id || undefined}
-        onExitCheckin={() => {
-          window.history.pushState({}, '', window.location.pathname);
-          setIsCheckinRoute(false);
-        }}
-      />
+      <Suspense fallback={<ModuleFallback fullScreen />}>
+        <PublicVisitorCheckin 
+          churchId={params.get('churchId') || params.get('church') || currentUser?.church_id || undefined}
+          orgId={params.get('orgId') || params.get('org') || currentUser?.org_id || undefined}
+          onExitCheckin={() => {
+            window.history.pushState({}, '', window.location.pathname);
+            setIsCheckinRoute(false);
+          }}
+        />
+      </Suspense>
     );
   }
 
@@ -931,14 +941,16 @@ const App: React.FC = () => {
   if (isPortalRoute) {
     const params = new URLSearchParams(window.location.search);
     return (
-      <PublicChurchPortal
-        churchId={params.get('churchId') || params.get('church') || currentUser?.church_id || undefined}
-        orgId={params.get('orgId') || params.get('org') || currentUser?.org_id || undefined}
-        onExitPortal={() => {
-          window.history.pushState({}, '', window.location.pathname);
-          setIsPortalRoute(false);
-        }}
-      />
+      <Suspense fallback={<ModuleFallback fullScreen />}>
+        <PublicChurchPortal
+          churchId={params.get('churchId') || params.get('church') || currentUser?.church_id || undefined}
+          orgId={params.get('orgId') || params.get('org') || currentUser?.org_id || undefined}
+          onExitPortal={() => {
+            window.history.pushState({}, '', window.location.pathname);
+            setIsPortalRoute(false);
+          }}
+        />
+      </Suspense>
     );
   }
 
@@ -1267,6 +1279,7 @@ const App: React.FC = () => {
         )}
 
         <div className="flex-1 overflow-hidden relative">
+          <Suspense fallback={<ModuleFallback />}>
           {activeTab === 'analytics' && (
             <AnalyticsDashboard 
               members={members} 
@@ -1575,6 +1588,7 @@ const App: React.FC = () => {
               onOpenSaaS={() => setActiveTab('saas')}
             />
           )}
+          </Suspense>
         </div>
 
         <MemberModal 
@@ -1609,12 +1623,16 @@ const App: React.FC = () => {
           initialData={selectedEvent} 
           team={team}
         />
-        <VisitorQrModal 
-          isOpen={isVisitorQrOpen}
-          onClose={() => setIsVisitorQrOpen(false)}
-          church={currentChurch}
-          organization={organization}
-        />
+        {isVisitorQrOpen && (
+          <Suspense fallback={null}>
+            <VisitorQrModal
+              isOpen={isVisitorQrOpen}
+              onClose={() => setIsVisitorQrOpen(false)}
+              church={currentChurch}
+              organization={organization}
+            />
+          </Suspense>
+        )}
 
         {isProfileModalOpen && currentUser && (
           <UserProfileModal 
