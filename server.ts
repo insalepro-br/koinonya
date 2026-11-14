@@ -193,7 +193,7 @@ app.use('/api', (_req, res) => {
 async function startServer() {
   if (IS_PROD) {
     if (!existsSync(path.join(STATIC_DIR, 'index.html'))) {
-      console.error(`Build do front ausente em ${STATIC_DIR}. Rode "npm run build".`);
+      console.error(`Build do front ausente em ${STATIC_DIR}. Rode "pnpm build".`);
       process.exit(1);
     }
     app.use(

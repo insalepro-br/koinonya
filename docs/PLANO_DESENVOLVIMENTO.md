@@ -52,8 +52,8 @@ As etapas 4 e 5 podem ser desenvolvidas em branches independentes depois de esta
 
 **Etapa 0 — Instalação e execução**
 
-- Registrar a versão de Node compatível com as dependências, instalar com `npm ci` e verificar conflitos no lockfile. Revisar dependências vulneráveis e imports de pacotes usados diretamente, incluindo `ws`.
-- Executar `npm run lint`, que atualmente faz a checagem TypeScript, e `npm run build`. Corrigir os erros observados mantendo os contratos dos componentes e serviços.
+- Registrar a versão de Node compatível com as dependências, instalar com `pnpm install --frozen-lockfile` e verificar conflitos no lockfile. Revisar dependências vulneráveis e imports de pacotes usados diretamente, incluindo `ws`.
+- Executar `pnpm lint`, que atualmente faz a checagem TypeScript, e `pnpm build`. Corrigir os erros observados mantendo os contratos dos componentes e serviços.
 - Integrar Tailwind ao build, criar o CSS de entrada e consolidar o carregamento de React e demais bibliotecas pelo Vite. Conferir estilos dinâmicos, cores de etapas, ícones e modo escuro.
 - Corrigir o curinga da rota de frontend para Express 5 e garantir respostas JSON nas rotas de API desconhecidas.
 - Preparar build do frontend em `dist/` e do backend em `dist-server/`, com o caminho de arquivos estáticos resolvido corretamente após compilar o servidor.
