@@ -217,6 +217,13 @@ app.use('/api', (_req, res) => {
   res.status(404).json({ error: 'Rota não encontrada.' });
 });
 
+// ---------- páginas legais (HTML estático, legível sem JavaScript: exigido pelo Google OAuth) ----------
+const LEGAL_DIR = path.join(IS_PROD ? STATIC_DIR : path.resolve('public'), 'legal');
+app.get(['/privacidade', '/termos'], (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(LEGAL_DIR, `${req.path.slice(1)}.html`));
+});
+
 // ---------- front ----------
 async function startServer() {
   if (IS_PROD) {

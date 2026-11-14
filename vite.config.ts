@@ -77,7 +77,8 @@ export default defineConfig({
       workbox: {
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-        navigateFallbackDenylist: [/^\/api/],
+        // /privacidade e /termos são páginas estáticas do servidor, não rotas do app.
+        navigateFallbackDenylist: [/^\/api/, /^\/(privacidade|termos)\/?$/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

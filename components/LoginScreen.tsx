@@ -554,6 +554,11 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                 Ambiente Seguro & Protegido
               </p>
             </div>
+            <p className="mt-3 text-center text-[9px] font-bold uppercase tracking-wider text-slate-400">
+              <a href="/termos" target="_blank" rel="noopener" className="underline hover:text-indigo-600">Termos de Uso</a>
+              <span className="mx-2" aria-hidden="true">·</span>
+              <a href="/privacidade" target="_blank" rel="noopener" className="underline hover:text-indigo-600">Privacidade</a>
+            </p>
           </div>
         </div>
       </div>
