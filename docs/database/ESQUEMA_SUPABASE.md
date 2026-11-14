@@ -63,7 +63,7 @@ Não depende do Firebase. Precisa de um OAuth Client do Google (Google Cloud Con
 
 | Ambiente | Redirect URI autorizado | Onde configurar |
 | --- | --- | --- |
-| Local | `http://127.0.0.1:54321/auth/v1/callback` | `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` no ambiente + `enabled = true` em `[auth.external.google]` do `supabase/config.toml`, depois `pnpm db:stop && pnpm db:start` |
+| Local | `http://127.0.0.1:54321/auth/v1/callback` | `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` em `supabase/.env`, depois `pnpm db:stop && pnpm db:start` |
 | Nuvem | `https://<ref>.supabase.co/auth/v1/callback` | Painel do Supabase → Authentication → Sign In / Providers → Google |
 
 Origens JavaScript autorizadas: `http://localhost:3000` (local) e o domínio do app (staging/produção). No Supabase da nuvem, cadastrar também o domínio do app em Authentication → URL Configuration.

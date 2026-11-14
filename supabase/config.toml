@@ -328,11 +328,11 @@ max_frequency = "5s"
 # Use an external OAuth provider. The full list of providers are: `apple`, `azure`, `bitbucket`,
 # `discord`, `facebook`, `github`, `gitlab`, `google`, `keycloak`, `linkedin_oidc`, `notion`, `twitch`,
 # `twitter`, `x`, `slack_oidc`, `spotify`, `workos`, `zoom`.
-# Login com Google. Crie um OAuth Client (tipo Web) no Google Cloud com o redirect
-# http://127.0.0.1:54321/auth/v1/callback e defina GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET no
-# ambiente antes de `pnpm db:start`. Depois troque enabled para true.
+# Login com Google. OAuth Client (tipo Web) no Google Cloud com o redirect
+# http://127.0.0.1:54321/auth/v1/callback. Credenciais em supabase/.env (lido pelo CLI; o git ignora),
+# modelo em supabase/.env.example. Sem o arquivo o stack sobe normalmente, só o Google não funciona.
 [auth.external.google]
-enabled = false
+enabled = true
 client_id = "env(GOOGLE_CLIENT_ID)"
 secret = "env(GOOGLE_CLIENT_SECRET)"
 redirect_uri = ""
