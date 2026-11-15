@@ -106,7 +106,7 @@ const VisitorQrModal: React.FC<VisitorQrModalProps> = ({
   // FULLSCREEN PRESENTER / TELÃO VIEW
   if (isPresenting) {
     return (
-      <div className="fixed inset-0 z-[200] bg-slate-950 text-white flex flex-col items-center justify-between p-8 sm:p-12 animate-in fade-in duration-300">
+      <div className="fixed inset-0 !mt-0 z-[200] bg-slate-950 text-white flex flex-col items-center justify-between p-8 sm:p-12 animate-in fade-in duration-300">
         <div className="w-full flex justify-between items-center max-w-5xl">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-indigo-600 rounded-2xl text-white shadow-lg">
@@ -156,7 +156,7 @@ const VisitorQrModal: React.FC<VisitorQrModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 !mt-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-[36px] shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700 flex flex-col animate-in zoom-in-95 duration-200">
         
         {/* Header */}
@@ -227,7 +227,7 @@ const VisitorQrModal: React.FC<VisitorQrModalProps> = ({
           <div className="grid grid-cols-2 gap-3 pt-2">
             <button
               onClick={() => setIsPresenting(true)}
-              className="p-3.5 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
+              className="p-3.5 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
             >
               <Tv className="w-4 h-4" />
               <span>Modo Telão</span>
@@ -243,7 +243,7 @@ const VisitorQrModal: React.FC<VisitorQrModalProps> = ({
 
             <button
               onClick={handleOpenTest}
-              className="col-span-2 p-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 text-slate-700 dark:text-slate-300 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all"
+              className="col-span-2 p-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-400 text-slate-700 dark:text-slate-300 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all"
             >
               <ExternalLink className="w-4 h-4 text-indigo-500" />
               <span>Abrir Ficha em Nova Aba (Testar)</span>

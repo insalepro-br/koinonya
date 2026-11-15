@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Member, ScheduleEvent, SystemUser, PipelineStage } from '../types';
-import { DEFAULT_STAGES } from '../constants';
+import { DEFAULT_STAGES, stageTone } from '../constants';
 import { generateHumanizedMessage } from '../services/geminiService';
 import { 
   MessageCircle, 
@@ -140,7 +140,7 @@ const MemberCard: React.FC<MemberCardProps> = ({
             <select
               value={member.stage}
               onChange={(e) => onMove?.(member.id, e.target.value)}
-              className={`text-[8px] font-black uppercase px-2 py-1 rounded-lg border-none focus:ring-1 focus:ring-indigo-500 outline-none appearance-none cursor-pointer ${currentStageInfo?.color || 'bg-slate-100 text-slate-700'} ${currentStageInfo?.border || 'border-slate-200'} dark:opacity-80`}
+              className={`text-[8px] font-black uppercase px-2 py-1 rounded-lg border-none focus:ring-1 focus:ring-indigo-500 outline-none appearance-none cursor-pointer ${stageTone(currentStageInfo?.color) || 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'} ${currentStageInfo?.border || 'border-slate-200 dark:border-slate-700'} dark:opacity-80`}
             >
               {stages.map(s => (
                 <option key={s.id} value={s.id} className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">
@@ -173,14 +173,14 @@ const MemberCard: React.FC<MemberCardProps> = ({
             {/* Prominent Edit button */}
             <button 
               onClick={(e) => { e.stopPropagation(); onClick?.(member); }}
-              className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white transition-all flex items-center justify-center shadow-sm"
+              className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white dark:hover:text-white transition-all flex items-center justify-center shadow-sm"
               title="Editar Perfil"
             >
               <Edit3 className="w-3.5 h-3.5" />
             </button>
             <button 
               onClick={(e) => { e.stopPropagation(); onAddTask?.(member); }}
-              className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white transition-all flex items-center justify-center shadow-sm"
+              className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white dark:hover:text-white transition-all flex items-center justify-center shadow-sm"
               title="Agendar Acompanhamento"
             >
               <CalendarPlus className="w-3.5 h-3.5" />
@@ -188,7 +188,7 @@ const MemberCard: React.FC<MemberCardProps> = ({
             <button 
               onClick={handleGenerateMessage}
               disabled={isGenerating}
-              className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 dark:hover:bg-emerald-500 hover:text-white disabled:opacity-50 transition-all flex items-center justify-center shadow-sm"
+              className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 dark:hover:bg-emerald-500 hover:text-white dark:hover:text-white disabled:opacity-50 transition-all flex items-center justify-center shadow-sm"
               title="Sugerir Mensagem com IA"
             >
               {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
@@ -199,7 +199,7 @@ const MemberCard: React.FC<MemberCardProps> = ({
                 onClick={(e) => e.stopPropagation()}
                 target="_blank"
                 rel="noreferrer"
-                className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 dark:hover:bg-emerald-500 hover:text-white transition-all flex items-center justify-center shadow-sm"
+                className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 dark:hover:bg-emerald-500 hover:text-white dark:hover:text-white transition-all flex items-center justify-center shadow-sm"
                 title="WhatsApp"
               >
                 <MessageCircle className="w-3.5 h-3.5" />
@@ -210,7 +210,7 @@ const MemberCard: React.FC<MemberCardProps> = ({
           <button 
             onClick={handleNextStage}
             disabled={isAtLastStage}
-            className="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white disabled:opacity-30 transition-all flex items-center justify-center shadow-sm"
+            className="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white dark:hover:text-white disabled:opacity-30 transition-all flex items-center justify-center shadow-sm"
             title="Avançar para a próxima etapa"
           >
             <ArrowRight className="w-3.5 h-3.5" />
@@ -222,7 +222,7 @@ const MemberCard: React.FC<MemberCardProps> = ({
       {generatedMsg && (
         <div 
           onClick={(e) => e.stopPropagation()} 
-          className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in"
+          className="fixed inset-0 !mt-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in"
         >
           <div className="bg-white dark:bg-slate-800 max-w-lg w-full rounded-[32px] p-6 shadow-2xl border border-slate-100 dark:border-slate-700 animate-in zoom-in-95">
             <div className="flex items-center justify-between mb-4">

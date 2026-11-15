@@ -594,7 +594,7 @@ const PublicChurchPortal: React.FC<PublicChurchPortalProps> = ({
 
       {/* Registration Modal */}
       {selectedEvent && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 !mt-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md overflow-hidden shadow-xl">
             <div className="p-5 border-b border-slate-200 flex items-start justify-between gap-3">
               <div>

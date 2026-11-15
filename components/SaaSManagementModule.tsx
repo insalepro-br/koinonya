@@ -89,13 +89,13 @@ const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; icon: any; badg
     label: 'Pendente / Vencida',
     icon: AlertTriangle,
     badgeClass: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800',
-    rowBg: 'bg-orange-50/20 hover:bg-orange-50/40 dark:bg-orange-950/10'
+    rowBg: 'bg-orange-50/20 hover:bg-orange-50/40 dark:hover:bg-orange-950/30 dark:bg-orange-950/10'
   },
   SUSPENDED: {
     label: 'Acesso Suspenso',
     icon: Ban,
     badgeClass: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800',
-    rowBg: 'bg-rose-50/20 hover:bg-rose-50/40 dark:bg-rose-950/10'
+    rowBg: 'bg-rose-50/20 hover:bg-rose-50/40 dark:hover:bg-rose-950/30 dark:bg-rose-950/10'
   },
   CANCELED: {
     label: 'Cancelada',
@@ -545,7 +545,7 @@ export const SaaSManagementModule: React.FC<SaaSManagementModuleProps> = ({
             onClick={subTab === 'tenants' ? handleExportTenantsCSV : handleExportInvoicesCSV}
             className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-bold transition-all shadow-sm whitespace-nowrap shrink-0"
           >
-            <Download className="w-4 h-4 text-emerald-600 shrink-0" />
+            <Download className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>Exportar CSV</span>
           </button>
 
@@ -731,7 +731,7 @@ export const SaaSManagementModule: React.FC<SaaSManagementModuleProps> = ({
                 </div>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black text-slate-800 dark:text-white tabular-nums">
+                <span className="text-2xl 2xl:text-3xl font-black whitespace-nowrap text-slate-800 dark:text-white tabular-nums">
                   {activeOrgs.length > 0
                     ? (mrr / activeOrgs.length).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                     : 'R$ 149,00'}
@@ -914,7 +914,7 @@ export const SaaSManagementModule: React.FC<SaaSManagementModuleProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => openWhatsAppBillingNotice(org)}
-                                  className="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-xl transition-all"
+                                  className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-xl transition-all"
                                   title="Enviar cobrança via WhatsApp"
                                 >
                                   <MessageSquare className="w-4 h-4" />
@@ -925,7 +925,7 @@ export const SaaSManagementModule: React.FC<SaaSManagementModuleProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => handleExtendTrial(org, 7)}
-                                  className="px-2.5 py-1 text-[10px] font-black bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 rounded-xl transition-all whitespace-nowrap shrink-0"
+                                  className="px-2.5 py-1 text-[10px] font-black bg-amber-50 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 rounded-xl transition-all whitespace-nowrap shrink-0"
                                   title="Prorrogar testes em +7 dias"
                                 >
                                   +7 Dias
@@ -938,8 +938,8 @@ export const SaaSManagementModule: React.FC<SaaSManagementModuleProps> = ({
                                   onClick={() => handleToggleSuspension(org)}
                                   className={`p-2 rounded-xl transition-all ${
                                     currentStatus === 'SUSPENDED'
-                                      ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
-                                      : 'text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40'
+                                      ? 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
+                                      : 'text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40'
                                   }`}
                                   title={currentStatus === 'SUSPENDED' ? 'Reativar Acesso' : 'Suspender Acesso'}
                                 >
@@ -951,7 +951,7 @@ export const SaaSManagementModule: React.FC<SaaSManagementModuleProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => setEditingOrg(org)}
-                                  className="p-2 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-xl transition-all"
+                                  className="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-xl transition-all"
                                   title="Editar Plano, Limite e Cobrança"
                                 >
                                   <Edit3 className="w-4 h-4" />
@@ -1113,17 +1113,17 @@ export const SaaSManagementModule: React.FC<SaaSManagementModuleProps> = ({
                               <button
                                 type="button"
                                 onClick={() => handleCopyPixCode(inv)}
-                                className="p-2 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-xl transition-all"
+                                className="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-xl transition-all"
                                 title="Copiar PIX Copia e Cola"
                               >
-                                {copiedInvoiceId === inv.id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                                {copiedInvoiceId === inv.id ? <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-4 h-4" />}
                               </button>
 
                               {isSuperAdmin && targetOrg && targetOrg.owner_phone && inv.status !== 'PAID' && (
                                 <button
                                   type="button"
                                   onClick={() => openWhatsAppBillingNotice(targetOrg, inv)}
-                                  className="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-xl transition-all"
+                                  className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-xl transition-all"
                                   title="Enviar fatura PIX no WhatsApp"
                                 >
                                   <MessageSquare className="w-4 h-4" />
@@ -1145,7 +1145,7 @@ export const SaaSManagementModule: React.FC<SaaSManagementModuleProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => handleMarkInvoiceOverdue(inv)}
-                                  className="p-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-xl transition-all"
+                                  className="p-2 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-xl transition-all"
                                   title="Marcar fatura como vencida"
                                 >
                                   <AlertTriangle className="w-4 h-4" />
@@ -1177,11 +1177,11 @@ export const SaaSManagementModule: React.FC<SaaSManagementModuleProps> = ({
 
       {/* Modal: Provisionar Nova Igreja Cliente */}
       {isNewOrgModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 !mt-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-100 dark:border-slate-700 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700 mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
                   <Building2 className="w-5 h-5" />
                 </div>
                 <div>
@@ -1343,7 +1343,7 @@ export const SaaSManagementModule: React.FC<SaaSManagementModuleProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsNewOrgModalOpen(false)}
-                  className="px-5 py-2.5 text-slate-500 font-bold hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl transition-all"
+                  className="px-5 py-2.5 text-slate-500 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl transition-all"
                 >
                   Cancelar
                 </button>
@@ -1361,11 +1361,11 @@ export const SaaSManagementModule: React.FC<SaaSManagementModuleProps> = ({
 
       {/* Modal: Nova Fatura Avulsa */}
       {isNewInvoiceModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 !mt-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 dark:border-slate-700 animate-in zoom-in-95">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700 mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
                   <QrCode className="w-5 h-5" />
                 </div>
                 <div>
@@ -1483,7 +1483,7 @@ export const SaaSManagementModule: React.FC<SaaSManagementModuleProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsNewInvoiceModalOpen(false)}
-                  className="px-5 py-2.5 text-slate-500 font-bold hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl transition-all"
+                  className="px-5 py-2.5 text-slate-500 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl transition-all"
                 >
                   Cancelar
                 </button>
@@ -1501,7 +1501,7 @@ export const SaaSManagementModule: React.FC<SaaSManagementModuleProps> = ({
 
       {/* Modal: Editar Cobrança & Plano do Cliente */}
       {editingOrg && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 !mt-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 dark:border-slate-700 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700 mb-6">
               <div>
@@ -1651,7 +1651,7 @@ export const SaaSManagementModule: React.FC<SaaSManagementModuleProps> = ({
                 <button
                   type="button"
                   onClick={() => setEditingOrg(null)}
-                  className="px-5 py-2.5 text-slate-500 font-bold hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl transition-all"
+                  className="px-5 py-2.5 text-slate-500 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl transition-all"
                 >
                   Cancelar
                 </button>

@@ -260,7 +260,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     <div className="space-y-1">
       <label className="text-[10px] font-black uppercase text-slate-400 ml-2">E-mail</label>
       <div className="relative">
-        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 dark:text-slate-500" />
         <input
           type="email" required
           className={`${inputBase} pl-12 pr-6 disabled:opacity-50`}
@@ -277,7 +277,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     <div className="space-y-1">
       <label className="text-[10px] font-black uppercase text-slate-400 ml-2">Senha</label>
       <div className="relative">
-        <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+        <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 dark:text-slate-500" />
         <input
           type={showPass ? 'text' : 'password'} required minLength={mode === 'register' ? 8 : undefined}
           autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
@@ -289,7 +289,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
         <button
           type="button"
           onClick={() => setShowPass(!showPass)}
-          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-slate-300 hover:text-indigo-600 transition-colors"
+          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-slate-300 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
         >
           {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
         </button>
@@ -356,8 +356,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                         aria-current={active ? 'step' : undefined}
                         className={`relative z-10 w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black transition-all ${
                           done ? 'bg-indigo-600 text-white cursor-pointer'
-                          : active ? 'bg-white dark:bg-slate-800 border-2 border-indigo-600 text-indigo-600 ring-4 ring-indigo-100 dark:ring-indigo-900/40'
-                          : 'bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-300'
+                          : active ? 'bg-white dark:bg-slate-800 border-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 ring-4 ring-indigo-100 dark:ring-indigo-900/40'
+                          : 'bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-500'
                         }`}
                       >
                         {done ? <Check className="w-3 h-3" /> : i + 1}
@@ -373,7 +373,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
               {error && (
                 <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl animate-in fade-in slide-in-from-top-1">
                   <div className="flex gap-3">
-                    <X className="w-5 h-5 text-red-600 shrink-0" />
+                    <X className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0" />
                     <p className="text-[10px] font-bold text-red-800 dark:text-red-200 uppercase leading-tight">{error}</p>
                   </div>
                 </div>
@@ -382,7 +382,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
               {info && !error && (
                 <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl">
                   <div className="flex gap-3">
-                    <Info className="w-5 h-5 text-amber-600 shrink-0" />
+                    <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
                     <p className="text-[10px] font-bold text-amber-800 dark:text-amber-200 leading-snug">{info}</p>
                   </div>
                 </div>
@@ -391,7 +391,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
               {sessionEmail && !error && mode === 'register' && currentStep === 'igreja' && (
                 <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-2xl">
                   <div className="flex gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-indigo-600 shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
                     <div>
                       <p className="text-[10px] font-bold text-indigo-800 dark:text-indigo-200 uppercase leading-none">Conectado com Sucesso</p>
                       <p className="text-[9px] text-indigo-700 dark:text-indigo-400 mt-1">Você entrou como {sessionEmail}. Agora, finalize os dados da sua igreja.</p>
@@ -431,7 +431,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase text-slate-400 ml-2">Nome do Líder</label>
                     <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 dark:text-slate-500" />
                       <input
                         type="text" required
                         className={`${inputBase} pl-12 pr-6`}
@@ -444,7 +444,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase text-slate-400 ml-2">Nome da Organização</label>
                     <div className="relative">
-                      <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                      <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 dark:text-slate-500" />
                       <input
                         type="text" required
                         className={`${inputBase} pl-12 pr-6`}
@@ -457,7 +457,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase text-slate-400 ml-2">Primeira Igreja</label>
                     <div className="relative">
-                      <ChurchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                      <ChurchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 dark:text-slate-500" />
                       <input
                         type="text" required
                         className={`${inputBase} pl-12 pr-6`}
@@ -499,7 +499,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                       <div className="pt-1">
                         <input
                           type="checkbox"
-                          className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 transition-all"
+                          className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 dark:text-indigo-400 focus:ring-indigo-500 transition-all"
                           checked={form.lgpdConsent}
                           onChange={e => setForm({...form, lgpdConsent: e.target.checked})}
                         />
@@ -522,7 +522,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                     onClick={() => setStep(step - 1)}
                     disabled={loading}
                     aria-label="Voltar"
-                    className="px-6 bg-slate-50 dark:bg-slate-900 text-slate-500 rounded-[24px] hover:bg-slate-100 dark:hover:bg-slate-700 transition-all active:scale-95 flex items-center justify-center"
+                    className="px-6 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 rounded-[24px] hover:bg-slate-100 dark:hover:bg-slate-700 transition-all active:scale-95 flex items-center justify-center"
                   >
                     <ArrowLeft className="w-4 h-4" />
                   </button>
@@ -549,15 +549,15 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             </form>
 
             <div className="mt-6 flex items-center justify-center gap-2">
-              <Info className="w-3 h-3 text-slate-300" />
+              <Info className="w-3 h-3 text-slate-300 dark:text-slate-500" />
               <p className="text-center text-slate-400 text-[9px] font-bold uppercase tracking-wider">
                 Ambiente Seguro & Protegido
               </p>
             </div>
             <p className="mt-3 text-center text-[9px] font-bold uppercase tracking-wider text-slate-400">
-              <a href="/termos" target="_blank" rel="noopener" className="underline hover:text-indigo-600">Termos de Uso</a>
+              <a href="/termos" target="_blank" rel="noopener" className="underline hover:text-indigo-600 dark:hover:text-indigo-400">Termos de Uso</a>
               <span className="mx-2" aria-hidden="true">·</span>
-              <a href="/privacidade" target="_blank" rel="noopener" className="underline hover:text-indigo-600">Privacidade</a>
+              <a href="/privacidade" target="_blank" rel="noopener" className="underline hover:text-indigo-600 dark:hover:text-indigo-400">Privacidade</a>
             </p>
           </div>
         </div>

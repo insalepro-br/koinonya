@@ -123,7 +123,7 @@ const ImportContactsModal: React.FC<ImportContactsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+    <div className="fixed inset-0 !mt-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
       <div className="bg-white dark:bg-slate-800 w-full max-w-3xl rounded-[36px] shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden animate-in zoom-in-95 flex flex-col max-h-[92vh]">
         
         {/* Header */}
@@ -187,7 +187,7 @@ const ImportContactsModal: React.FC<ImportContactsModalProps> = ({
               className={`p-8 md:p-10 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
                 isDragOver 
                   ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30' 
-                  : 'border-slate-200 dark:border-slate-700 hover:border-indigo-400 hover:bg-slate-50/70 dark:hover:bg-slate-800/60'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-400 hover:bg-slate-50/70 dark:hover:bg-slate-800/60'
               }`}
             >
               <input 
@@ -228,7 +228,7 @@ const ImportContactsModal: React.FC<ImportContactsModalProps> = ({
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="text-xs font-bold text-slate-500 hover:text-rose-600 transition-colors uppercase tracking-wider"
+                  className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors uppercase tracking-wider"
                 >
                   Trocar arquivo
                 </button>
@@ -240,7 +240,7 @@ const ImportContactsModal: React.FC<ImportContactsModalProps> = ({
                   <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">
                     Amostra dos contatos detectados (primeiras {parsedResult.previewRows.length} linhas)
                   </span>
-                  <span className="text-[10px] font-bold text-slate-500">
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
                     Total a importar: <strong>{parsedResult.validMembers.length}</strong>
                   </span>
                 </div>

@@ -50,6 +50,28 @@ export const STAGE_COLOR_PRESETS = [
   { id: 'orange', label: 'Laranja', color: 'bg-orange-100 text-orange-800', border: 'border-orange-300' },
 ];
 
+// Modo escuro das cores de etapa. As cores ficam salvas no banco só com as
+// classes claras (STAGE_COLOR_PRESETS), então o tom escuro é acrescentado na
+// hora de pintar. As classes estão escritas por extenso para o Tailwind gerar.
+const STAGE_TONE_DARK: Record<string, string> = {
+  blue: 'dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-800',
+  amber: 'dark:bg-amber-900/40 dark:text-amber-200 dark:border-amber-800',
+  purple: 'dark:bg-purple-900/40 dark:text-purple-200 dark:border-purple-800',
+  emerald: 'dark:bg-emerald-900/40 dark:text-emerald-200 dark:border-emerald-800',
+  rose: 'dark:bg-rose-900/40 dark:text-rose-200 dark:border-rose-800',
+  indigo: 'dark:bg-indigo-900/40 dark:text-indigo-200 dark:border-indigo-800',
+  cyan: 'dark:bg-cyan-900/40 dark:text-cyan-200 dark:border-cyan-800',
+  orange: 'dark:bg-orange-900/40 dark:text-orange-200 dark:border-orange-800',
+  slate: 'dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600',
+};
+
+/** Classes da cor de uma etapa com o equivalente do modo escuro. */
+export const stageTone = (classes?: string): string => {
+  if (!classes) return '';
+  const tone = classes.match(/\bbg-([a-z]+)-100\b/)?.[1];
+  return tone && STAGE_TONE_DARK[tone] ? `${classes} ${STAGE_TONE_DARK[tone]}` : classes;
+};
+
 export const STAGE_ICON_OPTIONS = [
   { id: 'UserPlus', label: 'Novo Contato' },
   { id: 'Phone', label: 'Ligação / Primeiro Contato' },

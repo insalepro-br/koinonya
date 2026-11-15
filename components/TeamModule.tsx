@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Users, UserPlus, Shield, Mail, Trash2, Edit3, Key, X, Save, Briefcase, ChevronDown, Phone, CheckCircle2, Activity } from 'lucide-react';
 import { SystemUser, UserRole, AccessLevel, UserPresenceStatus } from '../types';
-import { ROLE_TRANSLATIONS, DEFAULT_ACCESS_LEVELS, USER_STATUS_CONFIG } from '../constants';
+import { ROLE_TRANSLATIONS, DEFAULT_ACCESS_LEVELS, USER_STATUS_CONFIG, stageTone } from '../constants';
 
 interface TeamModuleProps {
   team: SystemUser[];
@@ -75,7 +75,7 @@ const TeamModule: React.FC<TeamModuleProps> = ({
     const matched = accessLevels.find(l => l.roleKey === roleStr || l.id === roleStr || l.name === roleStr);
     if (matched?.color) {
       return (
-        <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border ${matched.color} dark:bg-opacity-20`}>
+        <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border ${stageTone(matched.color)}`}>
           {displayName}
         </span>
       );
@@ -233,7 +233,7 @@ const TeamModule: React.FC<TeamModuleProps> = ({
 
       {/* Modal de Criação / Edição de Líder */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 !mt-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-[36px] shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden animate-in zoom-in-95">
             <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-indigo-50/40 dark:bg-slate-900/50">
               <div className="flex items-center gap-3">

@@ -27,7 +27,7 @@ import {
   Send
 } from 'lucide-react';
 import { Member, MemberStage, SystemUser, ScheduleEvent, PipelineStage, Cell, MessageLog } from '../types';
-import { DEFAULT_STAGES, getStageIcon } from '../constants';
+import { DEFAULT_STAGES, getStageIcon, stageTone } from '../constants';
 
 interface MemberModalProps {
   isOpen: boolean;
@@ -224,7 +224,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+    <div className="fixed inset-0 !mt-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
       <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-[36px] md:rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[92vh]">
         
         {/* Header Fixo */}
@@ -286,7 +286,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
                   <label className="text-[10px] font-black uppercase text-indigo-600 dark:text-indigo-400 ml-1">
                     Nome Completo *
                   </label>
-                  <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-full">
+                  <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-full">
                     Obrigatório
                   </span>
                 </div>
@@ -373,7 +373,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
                       CEP <span className="font-normal text-slate-400">(Opcional)</span>
                     </label>
                     <div className="relative">
-                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300" />
+                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 dark:text-slate-500" />
                       <input 
                         type="text"
                         className="w-full pl-9 pr-8 py-3 bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-800 dark:text-white text-xs"
@@ -431,24 +431,24 @@ const MemberModal: React.FC<MemberModalProps> = ({
               </div>
 
               {/* MÓDULO DE FAMÍLIA / HOUSEHOLD */}
-              <div className="md:col-span-2 p-5 bg-amber-50/50 rounded-3xl border border-amber-200/60 space-y-4">
+              <div className="md:col-span-2 p-5 bg-amber-50/50 dark:bg-amber-950/30 rounded-3xl border border-amber-200/60 dark:border-amber-800 space-y-4">
                 <div className="flex items-center gap-2">
-                  <Home className="w-5 h-5 text-amber-600" />
-                  <h4 className="text-xs font-black text-amber-900 uppercase tracking-wider">
-                    Núcleo Familiar / Household <span className="font-normal text-slate-500 text-[10px] lowercase">(opcional)</span>
+                  <Home className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                  <h4 className="text-xs font-black text-amber-900 dark:text-amber-200 uppercase tracking-wider">
+                    Núcleo Familiar / Household <span className="font-normal text-slate-500 dark:text-slate-400 text-[10px] lowercase">(opcional)</span>
                   </h4>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-slate-500 ml-1">
+                    <label className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 ml-1">
                       Nome da Família <span className="font-normal text-slate-400">(Opcional)</span>
                     </label>
                     <div className="relative">
                       <input 
                         list="households-list"
                         type="text"
-                        className="w-full px-4 py-3 bg-white border border-amber-200 rounded-2xl focus:ring-2 focus:ring-amber-500 outline-none font-bold text-slate-800 text-sm"
+                        className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-800 rounded-2xl focus:ring-2 focus:ring-amber-500 outline-none font-bold text-slate-800 dark:text-white text-sm"
                         placeholder="Ex: Família Silva"
                         value={formData.household_name || ''}
                         onChange={e => setFormData({ ...formData, household_name: e.target.value })}
@@ -462,12 +462,12 @@ const MemberModal: React.FC<MemberModalProps> = ({
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-slate-500 ml-1">
+                    <label className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 ml-1">
                       Papel na Família <span className="font-normal text-slate-400">(Opcional)</span>
                     </label>
                     <div className="relative">
                       <select
-                        className="w-full px-4 py-3 bg-white border border-amber-200 rounded-2xl focus:ring-2 focus:ring-amber-500 outline-none appearance-none font-bold text-slate-700 text-sm"
+                        className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-800 rounded-2xl focus:ring-2 focus:ring-amber-500 outline-none appearance-none font-bold text-slate-700 dark:text-slate-300 text-sm"
                         value={formData.household_role || ''}
                         onChange={e => setFormData({ 
                           ...formData, 
@@ -487,20 +487,20 @@ const MemberModal: React.FC<MemberModalProps> = ({
 
                 {/* Linked family members */}
                 {linkedFamilyMembers.length > 0 && (
-                  <div className="pt-2 border-t border-amber-200/50">
-                    <p className="text-[10px] font-bold text-amber-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <div className="pt-2 border-t border-amber-200/50 dark:border-amber-800">
+                    <p className="text-[10px] font-bold text-amber-800 dark:text-amber-200 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                       <Users2 className="w-3.5 h-3.5" />
                       Membros vinculados a esta família na igreja ({linkedFamilyMembers.length}):
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {linkedFamilyMembers.map(m => (
-                        <div key={m.id} className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-amber-200 shadow-2xs">
-                          <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-black flex items-center justify-center">
+                        <div key={m.id} className="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-amber-200 dark:border-amber-800 shadow-2xs">
+                          <span className="w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 text-[10px] font-black flex items-center justify-center">
                             {m.name[0]}
                           </span>
-                          <span className="text-xs font-bold text-slate-800">{m.name}</span>
+                          <span className="text-xs font-bold text-slate-800 dark:text-white">{m.name}</span>
                           {m.household_role && (
-                            <span className="text-[9px] font-bold bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded">
+                            <span className="text-[9px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded">
                               {m.household_role === 'HEAD' ? 'Titular' : m.household_role === 'SPOUSE' ? 'Cônjuge' : m.household_role === 'CHILD' ? 'Filho(a)' : 'Parente'}
                             </span>
                           )}
@@ -531,7 +531,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
                     <option value="INDICATION" />
                     <option value="VISITA_PRESENCIAL" />
                   </datalist>
-                  <Tag className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 pointer-events-none" />
+                  <Tag className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 dark:text-slate-500 pointer-events-none" />
                 </div>
               </div>
 
@@ -613,7 +613,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
                     {getStageIcon(stages.find(s => s.id === formData.stage)?.iconName, 'w-4 h-4')}
                   </span>
                   <select 
-                    className={`w-full pl-12 pr-10 py-3.5 border rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none appearance-none font-bold text-sm ${stages.find(s => s.id === formData.stage)?.color || 'bg-slate-50 border-slate-200 text-slate-700'}`}
+                    className={`w-full pl-12 pr-10 py-3.5 border rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none appearance-none font-bold text-sm ${stageTone(stages.find(s => s.id === formData.stage)?.color) || 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'}`}
                     value={formData.stage}
                     onChange={e => setFormData({...formData, stage: e.target.value})}
                   >
@@ -749,14 +749,14 @@ const MemberModal: React.FC<MemberModalProps> = ({
                             <button 
                               type="button"
                               onClick={() => onEditEvent?.(event)}
-                              className="p-1.5 text-indigo-500 hover:bg-indigo-100 rounded-lg transition-all"
+                              className="p-1.5 text-indigo-500 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-lg transition-all"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
                             </button>
                             <button 
                               type="button"
                               onClick={() => onDeleteEvent?.(event.id)}
-                              className="p-1.5 text-rose-500 hover:bg-rose-100 rounded-lg transition-all"
+                              className="p-1.5 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-lg transition-all"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>

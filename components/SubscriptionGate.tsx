@@ -108,7 +108,7 @@ const SubscriptionGate: React.FC<SubscriptionGateProps> = ({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-indigo-600" />
+                <CreditCard className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 <span>Faturas em Aberto ({openInvoices.length})</span>
               </h2>
             </div>

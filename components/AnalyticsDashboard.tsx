@@ -10,7 +10,7 @@ import {
   Calendar, ChevronRight
 } from 'lucide-react';
 import { Member, MemberStage, PipelineStage, SystemUser, Cell as CellType, ScheduleEvent } from '../types';
-import { DEFAULT_STAGES, getStageIcon } from '../constants';
+import { DEFAULT_STAGES, getStageIcon, stageTone } from '../constants';
 import { getAccessToken } from '../lib/supabase';
 
 interface AnalyticsDashboardProps {
@@ -295,7 +295,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <h2 className="text-3xl font-black text-slate-800 dark:text-white tracking-tighter uppercase">
             Inteligência & Relatórios Pastorais
           </h2>
-          <p className="text-slate-500 font-medium text-sm mt-0.5">
+          <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-0.5">
             Métricas de consolidação, acompanhamento de células, geolocalização e diagnóstico pastoral com IA.
           </p>
         </div>
@@ -351,7 +351,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       )}
 
       {aiError && (
-        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl text-xs font-bold flex items-center justify-between">
+        <div className="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 rounded-2xl text-xs font-bold flex items-center justify-between">
           <span>{aiError}</span>
           <button onClick={() => setAiError(null)} className="underline cursor-pointer">Fechar</button>
         </div>
@@ -401,10 +401,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             return (
               <div 
                 key={stage.id} 
-                className="bg-slate-50/80 dark:bg-slate-900/60 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between hover:border-indigo-200 transition-all"
+                className="bg-slate-50/80 dark:bg-slate-900/60 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between hover:border-indigo-200 dark:hover:border-indigo-800 transition-all"
               >
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className={`p-1.5 rounded-lg ${stage.color} text-[10px]`}>
+                  <span className={`p-1.5 rounded-lg ${stageTone(stage.color)} text-[10px]`}>
                     {getStageIcon(stage.iconName, 'w-3.5 h-3.5')}
                   </span>
                   <span className="text-[10px] font-black text-slate-400 dark:text-slate-500">
@@ -437,7 +437,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       <div className="bg-white dark:bg-slate-800 p-8 rounded-[36px] shadow-xs border border-slate-100 dark:border-slate-700 transition-colors">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-600 rounded-2xl">
+            <div className="p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-2xl">
               <Flame className="w-5 h-5" />
             </div>
             <div>
@@ -470,11 +470,11 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             {cellAnalytics.cellsWithCounts.map(cell => (
               <div 
                 key={cell.id}
-                className="p-5 bg-slate-50 dark:bg-slate-900/60 rounded-3xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between gap-3 hover:border-rose-200 transition-all"
+                className="p-5 bg-slate-50 dark:bg-slate-900/60 rounded-3xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between gap-3 hover:border-rose-200 dark:hover:border-rose-800 transition-all"
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-black uppercase text-rose-600 bg-rose-50 dark:bg-rose-950/50 px-2.5 py-0.5 rounded-full">
+                    <span className="text-[10px] font-black uppercase text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 px-2.5 py-0.5 rounded-full">
                       {cell.target_audience || 'Geral'}
                     </span>
                     <span className="text-xs font-black text-slate-700 dark:text-slate-200">
@@ -485,7 +485,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   <h4 className="text-base font-black text-slate-800 dark:text-white truncate">
                     {cell.name}
                   </h4>
-                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
                     Líder: <strong className="text-slate-700 dark:text-slate-300">{cell.leaderName}</strong>
                   </p>
                 </div>
@@ -517,7 +517,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         <div className="bg-white dark:bg-slate-800 p-8 rounded-[36px] shadow-xs border border-slate-100 dark:border-slate-700 transition-colors">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-2xl">
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl">
                 <MapPin className="w-5 h-5" />
               </div>
               <div>
@@ -525,7 +525,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 <p className="text-xs text-slate-400 font-medium">De onde vêm os visitantes para expansão de novas células</p>
               </div>
             </div>
-            <span className="text-[10px] font-black text-blue-600 bg-blue-50 dark:bg-blue-900/40 px-3 py-1 rounded-full uppercase">
+            <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-3 py-1 rounded-full uppercase">
               Geolocalização
             </span>
           </div>
@@ -558,7 +558,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         <div className="bg-white dark:bg-slate-800 p-8 rounded-[36px] shadow-xs border border-slate-100 dark:border-slate-700 transition-colors">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-purple-50 dark:bg-purple-900/30 text-purple-600 rounded-2xl">
+              <div className="p-3 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-2xl">
                 <Compass className="w-5 h-5" />
               </div>
               <div>
@@ -566,7 +566,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 <p className="text-xs text-slate-400 font-medium">Origem do primeiro contato na igreja</p>
               </div>
             </div>
-            <span className="text-[10px] font-black text-purple-600 bg-purple-50 dark:bg-purple-900/40 px-3 py-1 rounded-full uppercase">
+            <span className="text-[10px] font-black text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/40 px-3 py-1 rounded-full uppercase">
               Canais
             </span>
           </div>
@@ -577,7 +577,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider truncate">{ch.channel}</p>
                 <div className="flex items-baseline justify-between mt-1">
                   <span className="text-2xl font-black text-slate-800 dark:text-white">{ch.count}</span>
-                  <span className="text-xs font-bold text-purple-600">{ch.percentage}%</span>
+                  <span className="text-xs font-bold text-purple-600 dark:text-purple-400">{ch.percentage}%</span>
                 </div>
               </div>
             ))}
@@ -589,7 +589,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       <div className="bg-white dark:bg-slate-800 p-8 rounded-[36px] shadow-xs border border-slate-100 dark:border-slate-700 transition-colors">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 rounded-2xl">
+            <div className="p-3 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl">
               <UserCheck className="w-5 h-5" />
             </div>
             <div>
@@ -599,7 +599,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               </p>
             </div>
           </div>
-          <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-900/40 px-3 py-1 rounded-full uppercase">
+          <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/40 px-3 py-1 rounded-full uppercase">
             Equipe Ativa
           </span>
         </div>
@@ -629,18 +629,18 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   </td>
                   <td className="py-4 text-center">
                     {lead.stagnantCount > 0 ? (
-                      <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full font-black text-[10px]">
+                      <span className="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 rounded-full font-black text-[10px]">
                         {lead.stagnantCount} alertas
                       </span>
                     ) : (
-                      <span className="text-emerald-600 font-bold text-[10px] flex items-center justify-center gap-1">
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[10px] flex items-center justify-center gap-1">
                         <CheckCircle2 className="w-3.5 h-3.5" /> Em dia
                       </span>
                     )}
                   </td>
                   <td className="py-4 text-right">
                     <span className={`font-black text-xs ${
-                      lead.attentionRatio >= 80 ? 'text-emerald-600' : lead.attentionRatio >= 50 ? 'text-amber-600' : 'text-rose-600'
+                      lead.attentionRatio >= 80 ? 'text-emerald-600 dark:text-emerald-400' : lead.attentionRatio >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'
                     }`}>
                       {lead.attentionRatio}%
                     </span>
@@ -656,7 +656,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       <div className="bg-white dark:bg-slate-800 p-8 rounded-[36px] shadow-xs border border-slate-100 dark:border-slate-700 transition-colors">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-rose-50 dark:bg-rose-900/30 text-rose-600 rounded-2xl">
+            <div className="p-3 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-2xl">
               <HeartHandshake className="w-5 h-5" />
             </div>
             <div>
@@ -664,7 +664,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               <p className="text-xs text-slate-400 font-medium">Necessidades espirituais e temas mais declarados pelas famílias</p>
             </div>
           </div>
-          <span className="text-[10px] font-black text-rose-600 bg-rose-50 dark:bg-rose-900/40 px-3 py-1 rounded-full uppercase">
+          <span className="text-[10px] font-black text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/40 px-3 py-1 rounded-full uppercase">
             Cuidado Pastoral
           </span>
         </div>
@@ -673,7 +673,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           {prayerThemes.map((item, idx) => (
             <div 
               key={idx}
-              className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-rose-200 transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-rose-200 dark:hover:border-rose-800 transition-all"
             >
               <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{item.theme}</span>
               <span className="px-2 py-0.5 bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300 rounded-full text-[10px] font-black">

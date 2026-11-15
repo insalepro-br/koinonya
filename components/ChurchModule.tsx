@@ -96,17 +96,17 @@ const ChurchModule: React.FC<ChurchModuleProps> = ({ churchId, team, onSave, onO
   if (!church) return null;
 
   return (
-    <div className="p-8 space-y-8 overflow-y-auto h-full max-w-5xl mx-auto bg-slate-50/50">
+    <div className="p-8 space-y-8 overflow-y-auto h-full max-w-5xl mx-auto bg-slate-50/50 dark:bg-slate-900/50">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h2 className="text-3xl font-black text-slate-800 tracking-tighter uppercase">Minha Igreja</h2>
-          <p className="text-slate-500 font-medium">Dados institucionais da comunidade.</p>
+          <h2 className="text-3xl font-black text-slate-800 dark:text-white tracking-tighter uppercase">Minha Igreja</h2>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">Dados institucionais da comunidade.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {onOpenVisitorQr && (
             <button
               onClick={onOpenVisitorQr}
-              className="flex items-center gap-2 px-5 py-3 rounded-xl font-black shadow-sm transition-all uppercase tracking-widest text-[9px] bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100"
+              className="flex items-center gap-2 px-5 py-3 rounded-xl font-black shadow-sm transition-all uppercase tracking-widest text-[9px] bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40"
             >
               <QrCode className="w-3.5 h-3.5" /> Ficha de Visitante / QR Code
             </button>
@@ -115,8 +115,8 @@ const ChurchModule: React.FC<ChurchModuleProps> = ({ churchId, team, onSave, onO
             onClick={() => setIsEditing(!isEditing)}
             className={`px-5 py-3 rounded-xl font-black shadow-sm transition-all uppercase tracking-widest text-[9px] border ${
               isEditing 
-                ? 'bg-rose-50 border-rose-100 text-rose-600 hover:bg-rose-100' 
-                : 'bg-white border-slate-100 text-slate-600 hover:bg-slate-50'
+                ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-100 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40' 
+                : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
             }`}
           >
             {isEditing ? 'Cancelar' : 'Editar Dados'}
@@ -125,14 +125,14 @@ const ChurchModule: React.FC<ChurchModuleProps> = ({ churchId, team, onSave, onO
       </div>
 
       {uploadError && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-3 text-rose-700 text-xs font-bold">
+        <div className="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-2xl flex items-center gap-3 text-rose-700 dark:text-rose-300 text-xs font-bold">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{uploadError}</span>
         </div>
       )}
 
       {saveFeedback && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 text-emerald-700 text-xs font-bold">
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl flex items-center gap-3 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span>{saveFeedback}</span>
         </div>
@@ -140,10 +140,10 @@ const ChurchModule: React.FC<ChurchModuleProps> = ({ churchId, team, onSave, onO
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex flex-col items-center">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-[32px] border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col items-center">
             <div className="relative group">
               <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
-              <div className="w-28 h-28 bg-indigo-50 rounded-[28px] flex items-center justify-center text-indigo-300 border-2 border-dashed border-indigo-200 overflow-hidden relative shadow-inner">
+              <div className="w-28 h-28 bg-indigo-50 dark:bg-indigo-950/40 rounded-[28px] flex items-center justify-center text-indigo-300 border-2 border-dashed border-indigo-200 dark:border-indigo-800 overflow-hidden relative shadow-inner">
                 {church.logo_url ? (
                   <img src={church.logo_url} className="w-full h-full object-cover" alt="Logo" />
                 ) : (
@@ -161,19 +161,19 @@ const ChurchModule: React.FC<ChurchModuleProps> = ({ churchId, team, onSave, onO
                 </button>
               )}
             </div>
-            <h3 className="mt-4 text-lg font-black text-slate-800 text-center">{church.name}</h3>
+            <h3 className="mt-4 text-lg font-black text-slate-800 dark:text-white text-center">{church.name}</h3>
             <p className="text-[9px] font-black text-indigo-500 uppercase tracking-widest mt-1">Sede Administrativa</p>
           </div>
         </div>
 
         <div className="lg:col-span-2">
-          <form onSubmit={handleSave} className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm space-y-6">
+          <form onSubmit={handleSave} className="bg-white dark:bg-slate-800 p-8 rounded-[40px] border border-slate-100 dark:border-slate-700 shadow-sm space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1 md:col-span-2">
                 <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Nome da Instituição</label>
                 <input 
                   type="text" disabled={!isEditing}
-                  className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold text-slate-800 disabled:opacity-60 transition-all"
+                  className="w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-900 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold text-slate-800 dark:text-white disabled:opacity-60 transition-all"
                   value={church.name}
                   onChange={e => setChurch({...church, name: e.target.value})}
                 />
@@ -182,10 +182,10 @@ const ChurchModule: React.FC<ChurchModuleProps> = ({ churchId, team, onSave, onO
               <div className="space-y-1">
                 <label className="text-[9px] font-black uppercase text-slate-400 ml-1">CEP</label>
                 <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 dark:text-slate-500" />
                   <input 
                     type="text" disabled={!isEditing} maxLength={9}
-                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 disabled:opacity-60 transition-all"
+                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 dark:text-white disabled:opacity-60 transition-all"
                     value={church.cep || ''}
                     onChange={e => {
                       setChurch({...church, cep: e.target.value});
@@ -201,14 +201,14 @@ const ChurchModule: React.FC<ChurchModuleProps> = ({ churchId, team, onSave, onO
                 <div className="relative">
                   <select 
                     disabled={!isEditing}
-                    className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 font-black text-[10px] uppercase tracking-widest text-indigo-600 disabled:opacity-60 transition-all appearance-none outline-none"
+                    className="w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-900 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 font-black text-[10px] uppercase tracking-widest text-indigo-600 dark:text-indigo-400 disabled:opacity-60 transition-all appearance-none outline-none"
                     value={church.pastor_name}
                     onChange={e => setChurch({...church, pastor_name: e.target.value})}
                   >
                     <option value="">Selecione na Equipe</option>
                     {team.map(m => <option key={m.id} value={m.name}>{m.name} ({m.role})</option>)}
                   </select>
-                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none" />
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 dark:text-slate-500 pointer-events-none" />
                 </div>
               </div>
 
@@ -216,7 +216,7 @@ const ChurchModule: React.FC<ChurchModuleProps> = ({ churchId, team, onSave, onO
                 <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Endereço Completo</label>
                 <input 
                   type="text" disabled={!isEditing}
-                  className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 disabled:opacity-60 transition-all"
+                  className="w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-900 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 dark:text-white disabled:opacity-60 transition-all"
                   value={church.address}
                   onChange={e => setChurch({...church, address: e.target.value})}
                 />
@@ -225,10 +225,10 @@ const ChurchModule: React.FC<ChurchModuleProps> = ({ churchId, team, onSave, onO
               <div className="space-y-1">
                 <label className="text-[9px] font-black uppercase text-slate-400 ml-1">WhatsApp Igreja</label>
                 <div className="relative">
-                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 dark:text-slate-500" />
                   <input 
                     type="text" disabled={!isEditing}
-                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 disabled:opacity-60 transition-all"
+                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 dark:text-white disabled:opacity-60 transition-all"
                     value={church.phone}
                     onChange={e => setChurch({...church, phone: e.target.value})}
                   />
@@ -238,10 +238,10 @@ const ChurchModule: React.FC<ChurchModuleProps> = ({ churchId, team, onSave, onO
               <div className="space-y-1">
                 <label className="text-[9px] font-black uppercase text-slate-400 ml-1">E-mail Institucional</label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 dark:text-slate-500" />
                   <input 
                     type="email" disabled={!isEditing}
-                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 disabled:opacity-60 transition-all"
+                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 dark:text-white disabled:opacity-60 transition-all"
                     value={church.email}
                     onChange={e => setChurch({...church, email: e.target.value})}
                   />
@@ -252,7 +252,7 @@ const ChurchModule: React.FC<ChurchModuleProps> = ({ churchId, team, onSave, onO
             {isEditing && (
               <button 
                 type="submit"
-                className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-[10px]"
+                className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-100 dark:shadow-none hover:bg-indigo-700 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-[10px]"
               >
                 <Save className="w-5 h-5" /> Salvar Alterações
               </button>

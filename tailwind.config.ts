@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import animate from 'tailwindcss-animate';
 
 export default {
   darkMode: 'class',
@@ -18,7 +19,11 @@ export default {
       fontFamily: {
         inter: ['Inter', 'sans-serif'],
       },
+      boxShadow: {
+        // Tailwind 3 não tem shadow-xs (equivale ao shadow-xs do v4).
+        xs: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+      },
     },
   },
-  plugins: [],
+  plugins: [animate],
 } satisfies Config;

@@ -232,7 +232,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
               {activeCells.length} {activeCells.length === 1 ? 'grupo' : 'grupos'}
             </span>
           </div>
-          <p className="text-slate-500 font-medium text-sm mt-1">
+          <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">
             Gestão pastoral da vida nos lares, participantes cadastrados e frequência semanal.
           </p>
         </div>
@@ -242,7 +242,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
             <button
               onClick={handleSeed}
               disabled={isSeeding}
-              className="flex items-center gap-2 px-5 py-3.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-2xl font-black shadow-xs hover:bg-emerald-100 transition-all uppercase tracking-widest text-xs cursor-pointer"
+              className="flex items-center gap-2 px-5 py-3.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-2xl font-black shadow-xs hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all uppercase tracking-widest text-xs cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
               <span>{isSeeding ? 'Carregando...' : 'Carregar Células Demo'}</span>
@@ -251,7 +251,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
 
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-2 px-6 py-3.5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 uppercase tracking-widest text-xs cursor-pointer"
+            className="flex items-center gap-2 px-6 py-3.5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-100 dark:shadow-none hover:bg-indigo-700 transition-all active:scale-95 uppercase tracking-widest text-xs cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Nova Célula</span>
@@ -266,7 +266,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
             <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Células Ativas</p>
             <h3 className="text-2xl font-black text-slate-800 dark:text-white mt-0.5">{activeCells.length}</h3>
           </div>
-          <div className="p-3 bg-rose-50 dark:bg-rose-950 text-rose-600 rounded-2xl">
+          <div className="p-3 bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400 rounded-2xl">
             <Flame className="w-6 h-6" />
           </div>
         </div>
@@ -276,7 +276,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
             <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Participantes Conectados</p>
             <h3 className="text-2xl font-black text-slate-800 dark:text-white mt-0.5">{totalConnectedMembers}</h3>
           </div>
-          <div className="p-3 bg-indigo-50 dark:bg-indigo-950 text-indigo-600 rounded-2xl">
+          <div className="p-3 bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 rounded-2xl">
             <Users2 className="w-6 h-6" />
           </div>
         </div>
@@ -284,11 +284,11 @@ const CellsModule: React.FC<CellsModuleProps> = ({
         <div className="bg-white dark:bg-slate-800 p-5 rounded-[28px] border border-slate-100 dark:border-slate-700 shadow-xs flex items-center justify-between">
           <div>
             <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Taxa de Conexão</p>
-            <h3 className="text-2xl font-black text-emerald-600 mt-0.5">
+            <h3 className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
               {members.length > 0 ? Math.round((totalConnectedMembers / members.length) * 100) : 0}%
             </h3>
           </div>
-          <div className="p-3 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 rounded-2xl">
+          <div className="p-3 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 rounded-2xl">
             <TrendingUp className="w-6 h-6" />
           </div>
         </div>
@@ -296,11 +296,11 @@ const CellsModule: React.FC<CellsModuleProps> = ({
         <div className="bg-white dark:bg-slate-800 p-5 rounded-[28px] border border-slate-100 dark:border-slate-700 shadow-xs flex items-center justify-between">
           <div>
             <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Média por Célula</p>
-            <h3 className="text-2xl font-black text-blue-600 mt-0.5">
+            <h3 className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-0.5">
               {activeCells.length > 0 ? (totalConnectedMembers / activeCells.length).toFixed(1) : 0} vidas
             </h3>
           </div>
-          <div className="p-3 bg-blue-50 dark:bg-blue-950 text-blue-600 rounded-2xl">
+          <div className="p-3 bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 rounded-2xl">
             <HeartHandshake className="w-6 h-6" />
           </div>
         </div>
@@ -309,7 +309,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
       {/* Search and Filters */}
       <div className="bg-white dark:bg-slate-800 p-3 rounded-[28px] border border-slate-100 dark:border-slate-700 shadow-xs flex flex-col md:flex-row gap-3 shrink-0">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 dark:text-slate-500" />
           <input
             type="text"
             placeholder="Buscar célula por nome, líder ou bairro..."
@@ -350,7 +350,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
                   {/* Top badges & actions */}
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <span className="p-2 bg-rose-50 dark:bg-rose-950 text-rose-600 rounded-xl">
+                      <span className="p-2 bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400 rounded-xl">
                         <Flame className="w-4 h-4" />
                       </span>
                       {cell.target_audience && (
@@ -362,14 +362,14 @@ const CellsModule: React.FC<CellsModuleProps> = ({
                     <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => openEditModal(cell)}
-                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all cursor-pointer"
+                        className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-xl transition-all cursor-pointer"
                         title="Editar Célula"
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onDeleteCell(cell.id)}
-                        className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"
+                        className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-all cursor-pointer"
                         title="Excluir Célula"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -377,7 +377,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
                     </div>
                   </div>
 
-                  <h3 className="text-xl font-black text-slate-800 dark:text-white group-hover:text-indigo-600 transition-colors">
+                  <h3 className="text-xl font-black text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                     {cell.name}
                   </h3>
 
@@ -388,13 +388,13 @@ const CellsModule: React.FC<CellsModuleProps> = ({
                       <span className="font-bold">Líder: {leader?.name || 'Não atribuído'}</span>
                     </div>
                     {coLeader && (
-                      <div className="flex items-center gap-2 text-slate-500 text-[11px]">
+                      <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-[11px]">
                         <span className="w-3.5 text-center">•</span>
                         <span>Vice: {coLeader.name}</span>
                       </div>
                     )}
                     {cell.host_name && (
-                      <div className="flex items-center gap-2 text-slate-500 text-[11px]">
+                      <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-[11px]">
                         <span className="w-3.5 text-center">🏠</span>
                         <span>Anfitrião: {cell.host_name}</span>
                       </div>
@@ -425,7 +425,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
                       </p>
                       <button
                         onClick={() => setViewingCellMembers(cell)}
-                        className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 cursor-pointer flex items-center gap-0.5"
+                        className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 dark:hover:text-indigo-200 dark:text-indigo-400 cursor-pointer flex items-center gap-0.5"
                       >
                         <UserPlus className="w-3 h-3" />
                         <span>Gerenciar</span>
@@ -438,10 +438,10 @@ const CellsModule: React.FC<CellsModuleProps> = ({
                           <div 
                             key={m.id} 
                             onClick={() => (onEditMember || onOpenMember)?.(m)}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-[10px] font-bold cursor-pointer hover:border-indigo-200 transition-colors"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-[10px] font-bold cursor-pointer hover:border-indigo-200 dark:hover:border-indigo-800 transition-colors"
                             title={`Ver perfil de ${m.name}`}
                           >
-                            <span className="w-4 h-4 rounded-full bg-indigo-100 text-indigo-700 text-[9px] font-black flex items-center justify-center">
+                            <span className="w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-[9px] font-black flex items-center justify-center">
                               {m.name[0]}
                             </span>
                             <span className="truncate max-w-[80px]">{m.name.split(' ')[0]}</span>
@@ -450,7 +450,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
                         {cellMembers.length > 5 && (
                           <span 
                             onClick={() => setViewingCellMembers(cell)}
-                            className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded-xl text-[10px] font-black cursor-pointer hover:bg-indigo-100"
+                            className="px-2 py-1 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 rounded-xl text-[10px] font-black cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/40"
                           >
                             +{cellMembers.length - 5}
                           </span>
@@ -468,7 +468,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
                 <div className="pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
                   <button
                     onClick={() => setViewingCellMembers(cell)}
-                    className="flex items-center gap-2 text-xs font-black text-indigo-600 hover:text-indigo-800 transition-colors cursor-pointer"
+                    className="flex items-center gap-2 text-xs font-black text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 transition-colors cursor-pointer"
                   >
                     <Users2 className="w-4 h-4" />
                     <span>Ver Todos ({cellMembers.length})</span>
@@ -477,7 +477,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
 
                   <button
                     onClick={() => openMeetingModal(cell)}
-                    className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-2xs"
+                    className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-600 dark:hover:bg-indigo-600 hover:text-white dark:hover:text-white text-indigo-700 dark:text-indigo-300 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-2xs"
                     title="Lançar relatório e frequência de reunião"
                   >
                     <BookOpen className="w-3.5 h-3.5" />
@@ -490,7 +490,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
         </div>
 
         {filteredCells.length === 0 && (
-          <div className="py-24 flex flex-col items-center justify-center text-slate-300 gap-4">
+          <div className="py-24 flex flex-col items-center justify-center text-slate-300 dark:text-slate-500 gap-4">
             <Flame className="w-16 h-16 opacity-20" />
             <p className="font-bold text-xs uppercase tracking-widest text-slate-400">
               Nenhuma célula ou pequeno grupo encontrado
@@ -507,11 +507,11 @@ const CellsModule: React.FC<CellsModuleProps> = ({
 
       {/* Modal: Nova / Editar Célula */}
       {isCellModalOpen && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 !mt-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-800 max-w-lg w-full rounded-[36px] p-8 shadow-2xl border border-slate-100 dark:border-slate-700 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-indigo-600 text-white rounded-2xl shadow-md shadow-indigo-200">
+                <div className="p-3 bg-indigo-600 text-white rounded-2xl shadow-md shadow-indigo-200 dark:shadow-none">
                   <Flame className="w-6 h-6" />
                 </div>
                 <div>
@@ -523,7 +523,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
                   </p>
                 </div>
               </div>
-              <button onClick={() => setIsCellModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-xl text-slate-400">
+              <button onClick={() => setIsCellModalOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -626,17 +626,17 @@ const CellsModule: React.FC<CellsModuleProps> = ({
                 />
               </div>
 
-              <div className="flex gap-3 pt-4 border-t border-slate-100">
+              <div className="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={() => setIsCellModalOpen(false)}
-                  className="flex-1 py-3.5 bg-slate-100 text-slate-700 font-bold text-xs uppercase tracking-wider rounded-2xl cursor-pointer"
+                  className="flex-1 py-3.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs uppercase tracking-wider rounded-2xl cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-indigo-100 cursor-pointer"
+                  className="flex-1 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-indigo-100 dark:shadow-none cursor-pointer"
                 >
                   Salvar Célula
                 </button>
@@ -648,11 +648,11 @@ const CellsModule: React.FC<CellsModuleProps> = ({
 
       {/* Modal: Lançar Relatório de Reunião */}
       {isMeetingModalOpen && selectedCell && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 !mt-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-800 max-w-lg w-full rounded-[36px] p-8 shadow-2xl border border-slate-100 dark:border-slate-700 animate-in zoom-in-95">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
+                <div className="p-3 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-2xl">
                   <BookOpen className="w-6 h-6" />
                 </div>
                 <div>
@@ -662,7 +662,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
                   </p>
                 </div>
               </div>
-              <button onClick={() => setIsMeetingModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-xl text-slate-400">
+              <button onClick={() => setIsMeetingModalOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -715,17 +715,17 @@ const CellsModule: React.FC<CellsModuleProps> = ({
                 />
               </div>
 
-              <div className="flex gap-3 pt-4 border-t border-slate-100">
+              <div className="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={() => setIsMeetingModalOpen(false)}
-                  className="flex-1 py-3 bg-slate-100 text-slate-700 font-bold text-xs uppercase tracking-wider rounded-2xl cursor-pointer"
+                  className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs uppercase tracking-wider rounded-2xl cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-indigo-100 cursor-pointer"
+                  className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-indigo-100 dark:shadow-none cursor-pointer"
                 >
                   Registrar Reunião
                 </button>
@@ -737,11 +737,11 @@ const CellsModule: React.FC<CellsModuleProps> = ({
 
       {/* Modal: Visualizar, Adicionar e Gerenciar Participantes Cadastrados na Célula (Feedback 2) */}
       {viewingCellMembers && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 !mt-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-800 max-w-xl w-full rounded-[36px] p-8 shadow-2xl border border-slate-100 dark:border-slate-700 animate-in zoom-in-95 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-rose-50 text-rose-600 rounded-2xl">
+                <div className="p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-2xl">
                   <Flame className="w-6 h-6" />
                 </div>
                 <div>
@@ -751,7 +751,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
                   </p>
                 </div>
               </div>
-              <button onClick={() => setViewingCellMembers(null)} className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 cursor-pointer">
+              <button onClick={() => setViewingCellMembers(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -782,7 +782,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
               </form>
 
               {linkingSuccessMsg && (
-                <div className="mt-2 text-xs font-bold text-emerald-600 flex items-center gap-1.5 animate-in fade-in">
+                <div className="mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 animate-in fade-in">
                   <Check className="w-3.5 h-3.5" />
                   <span>{linkingSuccessMsg}</span>
                 </div>
@@ -807,11 +807,11 @@ const CellsModule: React.FC<CellsModuleProps> = ({
                       {m.name[0]}
                     </div>
                     <div>
-                      <p className="font-bold text-slate-800 dark:text-white text-xs group-hover:text-indigo-600 transition-colors">{m.name}</p>
+                      <p className="font-bold text-slate-800 dark:text-white text-xs group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{m.name}</p>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-[10px] text-slate-400">{m.phone || 'Sem telefone'}</span>
                         {m.household_name && (
-                          <span className="text-[9px] bg-amber-50 text-amber-700 px-1.5 py-0.2 rounded font-semibold">
+                          <span className="text-[9px] bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 px-1.5 py-0.2 rounded font-semibold">
                             {m.household_name}
                           </span>
                         )}
@@ -825,7 +825,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
                         href={`https://wa.me/${m.phone.replace(/\D/g, '')}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
+                        className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-xl transition-all"
                         title="Conversar no WhatsApp"
                       >
                         <MessageCircle className="w-4 h-4" />
@@ -836,7 +836,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
                     </span>
                     <button
                       onClick={() => handleUnlinkMember(m.id)}
-                      className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"
+                      className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-all cursor-pointer"
                       title="Desvincular da célula"
                     >
                       <UserMinus className="w-4 h-4" />
@@ -846,7 +846,7 @@ const CellsModule: React.FC<CellsModuleProps> = ({
               ))}
 
               {members.filter(m => m.active !== false && m.cell_id === viewingCellMembers.id).length === 0 && (
-                <div className="py-12 text-center text-slate-300">
+                <div className="py-12 text-center text-slate-300 dark:text-slate-500">
                   <Users2 className="w-12 h-12 mx-auto mb-2 opacity-30" />
                   <p className="font-bold text-xs uppercase tracking-widest text-slate-400">
                     Nenhum participante vinculado a esta célula

@@ -607,7 +607,7 @@ export const CheckinModule: React.FC<CheckinModuleProps> = ({
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
             <span>{feedbackMsg}</span>
           </div>
-          <button onClick={() => setFeedbackMsg(null)} className="text-emerald-600 hover:text-emerald-800">
+          <button onClick={() => setFeedbackMsg(null)} className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -965,7 +965,7 @@ export const CheckinModule: React.FC<CheckinModuleProps> = ({
                         {item.checkin_type === 'KIDS' && (
                           <button
                             onClick={() => setSelectedBadgeCheckin(item)}
-                            className="p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+                            className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
                             title="Ver Etiqueta de Segurança"
                           >
                             <Printer className="w-4 h-4" />
@@ -1113,7 +1113,7 @@ export const CheckinModule: React.FC<CheckinModuleProps> = ({
                               Entrada {new Date(item.checked_in_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                             <span aria-hidden="true">·</span>
-                            <span className={isCheckedOut ? 'text-slate-500 font-medium' : 'text-emerald-600 dark:text-emerald-400 font-semibold'}>
+                            <span className={isCheckedOut ? 'text-slate-500 dark:text-slate-400 font-medium' : 'text-emerald-600 dark:text-emerald-400 font-semibold'}>
                               {isCheckedOut ? 'Retirada Concluída' : 'Em Sala'}
                             </span>
                           </div>
@@ -1198,7 +1198,7 @@ export const CheckinModule: React.FC<CheckinModuleProps> = ({
                       ) : (
                         <button
                           onClick={() => onDeleteCheckin(item.id)}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg"
+                          className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg"
                           title="Excluir registro"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -1332,7 +1332,7 @@ export const CheckinModule: React.FC<CheckinModuleProps> = ({
 
       {/* MODAL: NOVO CHECK-IN KIDS */}
       {isKidsModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div className="fixed inset-0 !mt-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-lg overflow-hidden shadow-xl">
             <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -1448,7 +1448,7 @@ export const CheckinModule: React.FC<CheckinModuleProps> = ({
                   type="checkbox"
                   checked={kidsForm.is_visitor}
                   onChange={e => setKidsForm(prev => ({ ...prev, is_visitor: e.target.checked }))}
-                  className="rounded border-slate-300 text-indigo-600"
+                  className="rounded border-slate-300 dark:border-slate-700 text-indigo-600 dark:text-indigo-400"
                 />
                 <span>Criança visitante (primeira vez no ministério infantil)</span>
               </label>
@@ -1476,7 +1476,7 @@ export const CheckinModule: React.FC<CheckinModuleProps> = ({
 
       {/* MODAL: VISITANTE NA PORTARIA */}
       {isVisitorModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div className="fixed inset-0 !mt-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-md overflow-hidden shadow-xl">
             <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -1485,7 +1485,7 @@ export const CheckinModule: React.FC<CheckinModuleProps> = ({
                   Visitante na Portaria
                 </h3>
               </div>
-              <button onClick={() => setIsVisitorModalOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsVisitorModalOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1568,13 +1568,13 @@ export const CheckinModule: React.FC<CheckinModuleProps> = ({
 
       {/* MODAL: ETIQUETA DE SEGURANÇA KIDS */}
       {selectedBadgeCheckin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div className="fixed inset-0 !mt-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-md overflow-hidden shadow-xl">
             <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 Etiqueta de Segurança Infantil
               </h3>
-              <button onClick={() => setSelectedBadgeCheckin(null)} className="p-1.5 text-slate-400 hover:text-slate-600">
+              <button onClick={() => setSelectedBadgeCheckin(null)} className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1638,7 +1638,7 @@ export const CheckinModule: React.FC<CheckinModuleProps> = ({
 
       {/* MODAL: CHECK-OUT SEGURO KIDS */}
       {checkoutTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div className="fixed inset-0 !mt-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-md overflow-hidden shadow-xl">
             <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -1647,7 +1647,7 @@ export const CheckinModule: React.FC<CheckinModuleProps> = ({
                   Confirmar Retirada · Koinonya Kids
                 </h3>
               </div>
-              <button onClick={() => setCheckoutTarget(null)} className="p-1.5 text-slate-400 hover:text-slate-600">
+              <button onClick={() => setCheckoutTarget(null)} className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                 <X className="w-5 h-5" />
               </button>
             </div>
