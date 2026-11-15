@@ -43,7 +43,16 @@ app.use(
             'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
             'font-src': ["'self'", 'https://fonts.gstatic.com'],
             'img-src': ["'self'", 'data:', 'blob:', 'https:'],
-            'connect-src': ["'self'", SUPABASE_ORIGIN, SUPABASE_WS, 'https://viacep.com.br'].filter(Boolean),
+            // Google Fonts aqui também: o service worker do PWA busca a fonte com fetch(),
+            // que obedece ao connect-src. Sem isso a Inter falha e cai na fonte genérica.
+            'connect-src': [
+              "'self'",
+              SUPABASE_ORIGIN,
+              SUPABASE_WS,
+              'https://viacep.com.br',
+              'https://fonts.googleapis.com',
+              'https://fonts.gstatic.com',
+            ].filter(Boolean),
             'worker-src': ["'self'"],
             'manifest-src': ["'self'"],
             'frame-ancestors': ["'none'"],
