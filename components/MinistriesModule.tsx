@@ -669,7 +669,7 @@ const MinistriesModule: React.FC<MinistriesModuleProps> = ({
             <span className="text-xs font-semibold text-slate-400">pendentes</span>
             {totalConflictsCount > 0 && (
               <>
-                <span className="text-slate-300">·</span>
+                <span className="text-slate-300 dark:text-slate-500">·</span>
                 <span className="text-sm font-black text-rose-600 dark:text-rose-400">
                   {totalConflictsCount} conflito(s)
                 </span>
@@ -830,7 +830,7 @@ const MinistriesModule: React.FC<MinistriesModuleProps> = ({
                       <button
                         type="button"
                         onClick={() => onDeleteSchedule(sch.id)}
-                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors cursor-pointer"
+                        className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors cursor-pointer"
                         title="Excluir escala"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -1018,7 +1018,7 @@ const MinistriesModule: React.FC<MinistriesModuleProps> = ({
                           <button
                             type="button"
                             onClick={() => openEditMinistry(min)}
-                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors cursor-pointer"
+                            className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors cursor-pointer"
                             title="Editar ministério"
                           >
                             <Edit3 className="w-4 h-4" />
@@ -1026,7 +1026,7 @@ const MinistriesModule: React.FC<MinistriesModuleProps> = ({
                           <button
                             type="button"
                             onClick={() => onDeleteMinistry(min.id)}
-                            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors cursor-pointer"
+                            className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors cursor-pointer"
                             title="Excluir ministério"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1165,7 +1165,7 @@ const MinistriesModule: React.FC<MinistriesModuleProps> = ({
 
       {/* MODAL: CRIAR / EDITAR MINISTÉRIO */}
       {isMinistryModalOpen && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div className="fixed inset-0 !mt-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 max-w-2xl w-full rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-200 dark:border-slate-700 max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700 shrink-0">
               <div>
@@ -1318,7 +1318,7 @@ const MinistriesModule: React.FC<MinistriesModuleProps> = ({
                                     : [...prev.volunteer_ids, person.id]
                                 }));
                               }}
-                              className="rounded text-indigo-600 w-4 h-4"
+                              className="rounded text-indigo-600 dark:text-indigo-400 w-4 h-4"
                             />
                             <span className="font-bold text-slate-800 dark:text-white">{person.name}</span>
                           </div>
@@ -1351,7 +1351,7 @@ const MinistriesModule: React.FC<MinistriesModuleProps> = ({
 
       {/* MODAL: CRIAR / EDITAR ESCALA */}
       {isScheduleModalOpen && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div className="fixed inset-0 !mt-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 max-w-2xl w-full rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-200 dark:border-slate-700 max-h-[92vh] flex flex-col">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700 shrink-0">
               <div>
@@ -1513,7 +1513,7 @@ const MinistriesModule: React.FC<MinistriesModuleProps> = ({
                   if (conflicts.length === 0) return null;
                   return (
                     <div className="p-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-amber-800 dark:text-amber-200 text-xs flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                      <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                       <span>
                         Atenção: esta pessoa já está escalada neste dia em{' '}
                         <strong>{conflicts.map(c => `${c.ministry_name} (${c.start_time})`).join(', ')}</strong>.

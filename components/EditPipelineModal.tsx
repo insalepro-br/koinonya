@@ -19,7 +19,8 @@ import {
   STAGE_COLOR_PRESETS, 
   STAGE_ICON_OPTIONS, 
   DEFAULT_STAGES, 
-  getStageIcon 
+  getStageIcon,
+  stageTone 
 } from '../constants';
 
 interface EditPipelineModalProps {
@@ -186,7 +187,7 @@ const EditPipelineModal: React.FC<EditPipelineModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 !mt-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white dark:bg-slate-800 w-full max-w-3xl rounded-[32px] shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700 flex flex-col max-h-[92vh]">
         
         {/* Header */}
@@ -257,7 +258,7 @@ const EditPipelineModal: React.FC<EditPipelineModalProps> = ({
                     className={`p-4 rounded-2xl border transition-all ${
                       isEditing 
                         ? 'border-indigo-500 ring-2 ring-indigo-500/20 bg-indigo-50/20 dark:bg-indigo-950/20' 
-                        : 'border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800/60 hover:border-slate-300'
+                        : 'border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800/60 hover:border-slate-300 dark:hover:border-slate-700'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-3">
@@ -266,7 +267,7 @@ const EditPipelineModal: React.FC<EditPipelineModalProps> = ({
                           {index + 1}
                         </span>
 
-                        <div className={`p-2 rounded-xl shrink-0 ${stage.color}`}>
+                        <div className={`p-2 rounded-xl shrink-0 ${stageTone(stage.color)}`}>
                           {getStageIcon(stage.iconName, 'w-4 h-4')}
                         </div>
 
@@ -294,7 +295,7 @@ const EditPipelineModal: React.FC<EditPipelineModalProps> = ({
                           onClick={() => handleMoveUp(index)}
                           disabled={index === 0}
                           title="Mover para a esquerda / cima"
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-20 transition-all"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-20 transition-all"
                         >
                           <ArrowUp className="w-4 h-4" />
                         </button>
@@ -303,7 +304,7 @@ const EditPipelineModal: React.FC<EditPipelineModalProps> = ({
                           onClick={() => handleMoveDown(index)}
                           disabled={index === stages.length - 1}
                           title="Mover para a direita / baixo"
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-20 transition-all"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-20 transition-all"
                         >
                           <ArrowDown className="w-4 h-4" />
                         </button>
@@ -324,7 +325,7 @@ const EditPipelineModal: React.FC<EditPipelineModalProps> = ({
                           type="button"
                           onClick={() => handleStartDelete(stage)}
                           title="Excluir etapa"
-                          className="p-1.5 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all"
+                          className="p-1.5 rounded-lg text-rose-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -375,7 +376,7 @@ const EditPipelineModal: React.FC<EditPipelineModalProps> = ({
                                   key={preset.id}
                                   type="button"
                                   onClick={() => handleUpdateStageProperty(stage.id, { color: preset.color, border: preset.border })}
-                                  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 ${preset.color} ${preset.border} ${
+                                  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 ${stageTone(preset.color)} ${preset.border} ${
                                     isSelected ? 'ring-2 ring-indigo-500 shadow-sm scale-105' : 'opacity-70 hover:opacity-100'
                                   }`}
                                 >
@@ -403,7 +404,7 @@ const EditPipelineModal: React.FC<EditPipelineModalProps> = ({
                                   className={`p-2 rounded-xl border text-left flex items-center gap-2 transition-all text-xs font-medium ${
                                     isSelected 
                                       ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold' 
-                                      : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                                      : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700'
                                   }`}
                                 >
                                   {getStageIcon(opt.id, 'w-4 h-4 shrink-0')}
@@ -426,7 +427,7 @@ const EditPipelineModal: React.FC<EditPipelineModalProps> = ({
             <button
               type="button"
               onClick={() => setIsAddingNew(true)}
-              className="w-full py-3.5 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 hover:border-indigo-300 transition-all group"
+              className="w-full py-3.5 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group"
             >
               <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
               <span>Incluir Nova Etapa no Pipeline</span>
@@ -443,7 +444,7 @@ const EditPipelineModal: React.FC<EditPipelineModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsAddingNew(false)}
-                  className="text-slate-400 hover:text-slate-600 text-xs font-bold"
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-bold"
                 >
                   Cancelar
                 </button>
@@ -451,7 +452,7 @@ const EditPipelineModal: React.FC<EditPipelineModalProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-black uppercase text-slate-500 block mb-1">
+                  <label className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 block mb-1">
                     Nome da Nova Etapa *
                   </label>
                   <input
@@ -465,7 +466,7 @@ const EditPipelineModal: React.FC<EditPipelineModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-black uppercase text-slate-500 block mb-1">
+                  <label className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 block mb-1">
                     Objetivo / Ação Recomendada
                   </label>
                   <input
@@ -480,7 +481,7 @@ const EditPipelineModal: React.FC<EditPipelineModalProps> = ({
 
               {/* Color options */}
               <div>
-                <label className="text-[10px] font-black uppercase text-slate-500 block mb-2">
+                <label className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 block mb-2">
                   Cor da Etapa
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -491,7 +492,7 @@ const EditPipelineModal: React.FC<EditPipelineModalProps> = ({
                         key={preset.id}
                         type="button"
                         onClick={() => setNewStageColor(preset)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 ${preset.color} ${preset.border} ${
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 ${stageTone(preset.color)} ${preset.border} ${
                           isSelected ? 'ring-2 ring-indigo-500 shadow-sm scale-105' : 'opacity-70 hover:opacity-100'
                         }`}
                       >
@@ -505,7 +506,7 @@ const EditPipelineModal: React.FC<EditPipelineModalProps> = ({
 
               {/* Icon options */}
               <div>
-                <label className="text-[10px] font-black uppercase text-slate-500 block mb-2">
+                <label className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 block mb-2">
                   Ícone
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -519,7 +520,7 @@ const EditPipelineModal: React.FC<EditPipelineModalProps> = ({
                         className={`p-2 rounded-xl border text-left flex items-center gap-2 transition-all text-xs font-medium ${
                           isSelected 
                             ? 'border-indigo-500 bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 font-bold shadow-sm' 
-                            : 'border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-900/40 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                            : 'border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-900/40 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700'
                         }`}
                       >
                         {getStageIcon(opt.id, 'w-4 h-4 shrink-0')}
@@ -585,7 +586,7 @@ const EditPipelineModal: React.FC<EditPipelineModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setDeletingStage(null)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200/60 dark:text-slate-300"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200/60 dark:hover:bg-slate-600/60 dark:text-slate-300"
                 >
                   Cancelar
                 </button>

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
 import { 
   LayoutDashboard, 
   Columns, 
@@ -27,36 +27,44 @@ import {
   HeartHandshake,
   Ticket
 } from 'lucide-react';
-import KanbanBoard from './components/KanbanBoard';
-import AnalyticsDashboard from './components/AnalyticsDashboard';
-import AutomationSettings from './components/AutomationSettings';
-import ScheduleModule from './components/ScheduleModule';
 import MemberModal from './components/MemberModal';
 import EventModal from './components/EventModal';
-import ContactsModule from './components/ContactsModule';
-import CellsModule from './components/CellsModule';
-import FinancialModule from './components/FinancialModule';
 import LoginScreen from './components/LoginScreen';
-import ChurchModule from './components/ChurchModule';
-import TeamModule from './components/TeamModule';
-import SettingsModule from './components/SettingsModule';
-import PublicVisitorCheckin from './components/PublicVisitorCheckin';
-import VisitorQrModal from './components/VisitorQrModal';
 import UserProfileModal from './components/UserProfileModal';
-import SaaSManagementModule from './components/SaaSManagementModule';
-import DiscipleshipModule from './components/DiscipleshipModule';
-import MinistriesModule from './components/MinistriesModule';
-import CheckinModule from './components/CheckinModule';
-import PastoralCareModule from './components/PastoralCareModule';
-import EventsHubModule from './components/EventsHubModule';
-import PublicChurchPortal from './components/PublicChurchPortal';
 import SubscriptionGate from './components/SubscriptionGate';
 import { PWAInstallButton, OfflineIndicator } from './components/PWAInstallButton';
+
+// Módulos carregados sob demanda: cada um vira um chunk próprio no build.
+const KanbanBoard = lazy(() => import('./components/KanbanBoard'));
+const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard'));
+const AutomationSettings = lazy(() => import('./components/AutomationSettings'));
+const ScheduleModule = lazy(() => import('./components/ScheduleModule'));
+const ContactsModule = lazy(() => import('./components/ContactsModule'));
+const CellsModule = lazy(() => import('./components/CellsModule'));
+const FinancialModule = lazy(() => import('./components/FinancialModule'));
+const ChurchModule = lazy(() => import('./components/ChurchModule'));
+const TeamModule = lazy(() => import('./components/TeamModule'));
+const SettingsModule = lazy(() => import('./components/SettingsModule'));
+const PublicVisitorCheckin = lazy(() => import('./components/PublicVisitorCheckin'));
+const VisitorQrModal = lazy(() => import('./components/VisitorQrModal'));
+const SaaSManagementModule = lazy(() => import('./components/SaaSManagementModule'));
+const DiscipleshipModule = lazy(() => import('./components/DiscipleshipModule'));
+const MinistriesModule = lazy(() => import('./components/MinistriesModule'));
+const CheckinModule = lazy(() => import('./components/CheckinModule'));
+const PastoralCareModule = lazy(() => import('./components/PastoralCareModule'));
+const EventsHubModule = lazy(() => import('./components/EventsHubModule'));
+const PublicChurchPortal = lazy(() => import('./components/PublicChurchPortal'));
+
+const ModuleFallback = ({ fullScreen = false }: { fullScreen?: boolean }) => (
+  <div className={`${fullScreen ? 'h-screen' : 'h-full'} w-full flex items-center justify-center bg-slate-50 dark:bg-slate-900`}>
+    <div className="w-10 h-10 border-4 border-indigo-200 dark:border-indigo-800 border-t-indigo-600 rounded-full animate-spin" />
+  </div>
+);
 import { Member, MemberStage, SystemUser, ScheduleEvent, EventType, Organization, PipelineStage, Church, UserRole, Cell, CellMeeting, AutomationRule, FinancialTransaction, FinancialCampaign, AccessLevel, UserPresenceStatus, DiscipleshipTrack, MemberTrackProgress, MessageLog, BroadcastCampaign, Ministry, MinistrySchedule, ServiceCheckin, PrayerRequest, PastoralVisit, SaaSInvoice, ChurchEvent, EventRegistration } from './types';
 import { DEFAULT_STAGES, DEFAULT_ACCESS_LEVELS, ROLE_TRANSLATIONS, USER_STATUS_CONFIG } from './constants';
 import { KoinoniaDB } from './services/db';
-import { auth } from './lib/firebase';
-import { onAuthStateChanged, signOut, updatePassword } from 'firebase/auth';
+import { supabase } from './lib/supabase';
+import type { Session } from '@supabase/supabase-js';
 
 const navItems = [
   { id: 'analytics', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
@@ -183,16 +191,19 @@ const App: React.FC = () => {
     if (!currentUser) return;
     const { password, ...profileUpdates } = updatedData;
     if (password) {
-      if (!auth.currentUser) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
         throw new Error('Sessão de autenticação expirada. Faça login novamente.');
       }
-      try {
-        await updatePassword(auth.currentUser, password);
-      } catch (err: any) {
-        if (err?.code === 'auth/requires-recent-login') {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) {
+        if (error.code === 'reauthentication_needed' || error.code === 'session_expired') {
           throw new Error('Por segurança, saia e faça login novamente antes de alterar sua senha.');
         }
-        throw new Error(err?.message || 'Não foi possível atualizar a senha.');
+        if (error.code === 'weak_password') {
+          throw new Error('Senha fraca: use pelo menos 8 caracteres.');
+        }
+        throw new Error(error.message || 'Não foi possível atualizar a senha.');
       }
     }
 
@@ -554,30 +565,31 @@ const App: React.FC = () => {
   }, [currentUser, isManagerOrAdmin, activeTab]);
 
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('koinonia_theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('koinonia_theme', 'light');
-    }
-  }, [isDarkMode]);
+    // Páginas públicas (check-in de visitante e portal) não têm modo escuro: ficam sempre no claro.
+    const isPublicRoute = isCheckinRoute || isPortalRoute;
+    document.documentElement.classList.toggle('dark', isDarkMode && !isPublicRoute);
+    localStorage.setItem('koinonia_theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode, isCheckinRoute, isPortalRoute]);
 
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+    let cancelled = false;
+
+    const loadSession = async (session: Session | null) => {
       try {
-        if (user) {
-          console.log("Auth state changed: user logged in", user.uid);
-          const profile = await KoinoniaDB.getUserProfile(user.uid);
+        if (session) {
+          // Perfil pelo vínculo com o login (auth_user_id); o RLS só devolve o próprio perfil.
+          const profile = await KoinoniaDB.getMyProfile();
+          if (cancelled) return;
           if (profile) {
             setCurrentUser(profile);
-            const org = await KoinoniaDB.getOrganization(profile.org_id);
+            const org = profile.org_id ? await KoinoniaDB.getOrganization(profile.org_id) : null;
+            if (cancelled) return;
             setOrganization(org);
             setIsLoggedIn(true);
           } else {
-            console.warn("Profile not found for authenticated user:", user.uid);
-            // Don't set isLoggedIn(false) yet, let LoginScreen handle registration completion if auth is present
-            // setIsLoggedIn(false); // Removed to avoid race with LoginScreen
+            // Sessão sem perfil: a LoginScreen detecta e mostra o cadastro da organização.
+            setIsLoggedIn(false);
+            setCurrentUser(null);
           }
         } else {
           setIsLoggedIn(false);
@@ -588,11 +600,21 @@ const App: React.FC = () => {
         console.error("Auth initialization error:", error);
         setIsLoggedIn(false);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
+    };
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      // Renovação de token não muda o usuário; evita recarregar perfil a cada hora.
+      if (event === 'TOKEN_REFRESHED') return;
+      // Fora do callback: chamadas ao Supabase dentro dele podem travar o cliente.
+      setTimeout(() => void loadSession(session), 0);
     });
 
-    return () => unsubscribeAuth();
+    return () => {
+      cancelled = true;
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   // Data Subscriptions
@@ -600,6 +622,8 @@ const App: React.FC = () => {
     if (!currentUser || !isLoggedIn) return;
 
     const shouldAutoSeed = (mod: string) => {
+      // Dados de demonstração só com VITE_DEMO_SEED=true (nunca em produção).
+      if (import.meta.env.VITE_DEMO_SEED !== 'true') return false;
       const key = `koinonya_seeded_${currentUser.org_id}_${mod}`;
       if (seededModulesRef.current.has(key) || localStorage.getItem(key) === '1') {
         return false;
@@ -719,7 +743,7 @@ const App: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await supabase.auth.signOut();
     setIsLoggedIn(false);
     setCurrentUser(null);
     setOrganization(null);
@@ -914,14 +938,16 @@ const App: React.FC = () => {
   if (isCheckinRoute) {
     const params = new URLSearchParams(window.location.search);
     return (
-      <PublicVisitorCheckin 
-        churchId={params.get('churchId') || params.get('church') || currentUser?.church_id || undefined}
-        orgId={params.get('orgId') || params.get('org') || currentUser?.org_id || undefined}
-        onExitCheckin={() => {
-          window.history.pushState({}, '', window.location.pathname);
-          setIsCheckinRoute(false);
-        }}
-      />
+      <Suspense fallback={<ModuleFallback fullScreen />}>
+        <PublicVisitorCheckin 
+          churchId={params.get('churchId') || params.get('church') || currentUser?.church_id || undefined}
+          orgId={params.get('orgId') || params.get('org') || currentUser?.org_id || undefined}
+          onExitCheckin={() => {
+            window.history.pushState({}, '', window.location.pathname);
+            setIsCheckinRoute(false);
+          }}
+        />
+      </Suspense>
     );
   }
 
@@ -929,21 +955,23 @@ const App: React.FC = () => {
   if (isPortalRoute) {
     const params = new URLSearchParams(window.location.search);
     return (
-      <PublicChurchPortal
-        churchId={params.get('churchId') || params.get('church') || currentUser?.church_id || undefined}
-        orgId={params.get('orgId') || params.get('org') || currentUser?.org_id || undefined}
-        onExitPortal={() => {
-          window.history.pushState({}, '', window.location.pathname);
-          setIsPortalRoute(false);
-        }}
-      />
+      <Suspense fallback={<ModuleFallback fullScreen />}>
+        <PublicChurchPortal
+          churchId={params.get('churchId') || params.get('church') || currentUser?.church_id || undefined}
+          orgId={params.get('orgId') || params.get('org') || currentUser?.org_id || undefined}
+          onExitPortal={() => {
+            window.history.pushState({}, '', window.location.pathname);
+            setIsPortalRoute(false);
+          }}
+        />
+      </Suspense>
     );
   }
 
   if (loading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-        <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-indigo-200 dark:border-indigo-800 border-t-indigo-600 rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -970,8 +998,8 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-white dark:bg-slate-900 overflow-hidden font-inter text-slate-800 dark:text-slate-100 transition-colors">
-      <aside className={`${isSidebarOpen ? 'w-80' : 'w-24'} bg-slate-900 dark:bg-black transition-all duration-500 flex flex-col z-50 shadow-2xl relative border-r border-slate-800 dark:border-slate-800/50`}>
-        <div className="p-10 flex items-center gap-5">
+      <aside className={`${isSidebarOpen ? 'w-80' : 'w-24'} bg-slate-900 dark:bg-black transition-all duration-500 flex flex-col z-50 shadow-2xl relative border-r border-slate-800 dark:border-slate-800/50 overflow-hidden shrink-0`}>
+        <div className={`${isSidebarOpen ? 'p-10 gap-5' : 'p-6 justify-center gap-0'} flex items-center transition-all duration-500`}>
           <div className="w-12 h-12 bg-indigo-500 rounded-[18px] flex items-center justify-center shadow-lg shadow-indigo-500/30 shrink-0">
             <Shield className="w-6 h-6 text-white" />
           </div>
@@ -983,12 +1011,14 @@ const App: React.FC = () => {
           )}
         </div>
 
-        <nav className="flex-1 px-8 py-6 space-y-2 overflow-y-auto scrollbar-hide">
+        <nav className={`${isSidebarOpen ? 'px-8' : 'px-3'} flex-1 py-6 space-y-2 overflow-y-auto overflow-x-hidden scrollbar-hide transition-all duration-500`}>
           {visibleNavItems.map(item => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-5 px-5 py-4 rounded-[24px] transition-all group ${
+              title={isSidebarOpen ? undefined : item.label}
+              aria-label={isSidebarOpen ? undefined : item.label}
+              className={`${isSidebarOpen ? 'w-full gap-5 px-5 py-4' : 'w-14 h-14 mx-auto justify-center gap-0 px-0 py-0'} flex items-center rounded-[24px] transition-all group ${
                 activeTab === item.id 
                   ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' 
                   : 'text-slate-500 hover:bg-slate-800 hover:text-white'
@@ -997,15 +1027,20 @@ const App: React.FC = () => {
               <div className={`${activeTab === item.id ? 'text-white' : 'text-slate-500 group-hover:text-indigo-400'} transition-colors shrink-0`}>
                 {item.icon}
               </div>
-              {isSidebarOpen && <span className="font-black text-[10px] uppercase tracking-[0.15em] truncate">{item.label}</span>}
+              {isSidebarOpen && <span className="font-black text-[10px] uppercase tracking-[0.15em] truncate whitespace-nowrap">{item.label}</span>}
             </button>
           ))}
         </nav>
 
-        <div className="p-8 border-t border-slate-800 shrink-0">
-           <button onClick={handleLogout} className="w-full flex items-center gap-5 px-5 py-4 rounded-[24px] text-rose-400 hover:bg-rose-500/10 transition-all group">
+        <div className={`${isSidebarOpen ? 'p-8' : 'p-4'} border-t border-slate-800 shrink-0 transition-all duration-500`}>
+           <button
+             onClick={handleLogout}
+             title={isSidebarOpen ? undefined : 'Sair'}
+             aria-label={isSidebarOpen ? undefined : 'Sair'}
+             className={`${isSidebarOpen ? 'w-full gap-5 px-5 py-4' : 'w-14 h-14 mx-auto justify-center gap-0 px-0 py-0'} flex items-center rounded-[24px] text-rose-400 hover:bg-rose-500/10 transition-all group`}
+           >
              <LogOut className="w-5 h-5 group-hover:translate-x-1 transition-transform shrink-0" />
-             {isSidebarOpen && <span className="font-black text-[10px] uppercase tracking-[0.15em]">Sair</span>}
+             {isSidebarOpen && <span className="font-black text-[10px] uppercase tracking-[0.15em] whitespace-nowrap">Sair</span>}
            </button>
         </div>
       </aside>
@@ -1013,7 +1048,7 @@ const App: React.FC = () => {
       <main className="flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-slate-900 transition-colors overflow-hidden">
         <header className="h-24 bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between px-12 shrink-0 z-40 transition-colors">
           <div className="flex items-center gap-8">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-2xl text-slate-400 transition-all">
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} aria-label={isSidebarOpen ? 'Fechar menu' : 'Abrir menu'} title={isSidebarOpen ? 'Fechar menu' : 'Abrir menu'} className="p-3 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-2xl text-slate-400 transition-all">
               {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
             <h2 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tighter truncate transition-colors">
@@ -1123,7 +1158,7 @@ const App: React.FC = () => {
                                     className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-[10px] font-bold transition-all ${
                                       isSelected 
                                         ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-slate-700' 
-                                        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                                     }`}
                                     title={item.desc}
                                   >
@@ -1190,7 +1225,7 @@ const App: React.FC = () => {
                           <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                           <span>Painel SaaS Master (Clientes)</span>
                         </div>
-                        <span className="text-[8.5px] font-black uppercase text-indigo-600 bg-indigo-50 dark:bg-indigo-950 px-1.5 py-0.5 rounded-full border border-indigo-200/50">
+                        <span className="text-[8.5px] font-black uppercase text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-1.5 py-0.5 rounded-full border border-indigo-200/50 dark:border-indigo-800">
                           MRR
                         </span>
                       </button>
@@ -1265,6 +1300,7 @@ const App: React.FC = () => {
         )}
 
         <div className="flex-1 overflow-hidden relative">
+          <Suspense fallback={<ModuleFallback />}>
           {activeTab === 'analytics' && (
             <AnalyticsDashboard 
               members={members} 
@@ -1573,6 +1609,7 @@ const App: React.FC = () => {
               onOpenSaaS={() => setActiveTab('saas')}
             />
           )}
+          </Suspense>
         </div>
 
         <MemberModal 
@@ -1607,12 +1644,16 @@ const App: React.FC = () => {
           initialData={selectedEvent} 
           team={team}
         />
-        <VisitorQrModal 
-          isOpen={isVisitorQrOpen}
-          onClose={() => setIsVisitorQrOpen(false)}
-          church={currentChurch}
-          organization={organization}
-        />
+        {isVisitorQrOpen && (
+          <Suspense fallback={null}>
+            <VisitorQrModal
+              isOpen={isVisitorQrOpen}
+              onClose={() => setIsVisitorQrOpen(false)}
+              church={currentChurch}
+              organization={organization}
+            />
+          </Suspense>
+        )}
 
         {isProfileModalOpen && currentUser && (
           <UserProfileModal 

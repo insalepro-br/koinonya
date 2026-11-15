@@ -1,0 +1,49 @@
+﻿{
+    "format_version":  1,
+    "captured_at_utc":  "2026-11-13T02:28:33.7113304Z",
+    "scope":  "local_source_structure",
+    "remote_export_status":  "pending_authenticated_access",
+    "source_commit":  "0a037cc",
+    "firebase_project_id":  "gen-lang-client-0519033383",
+    "firestore_database_id":  "ai-studio-56e15dbb-ab27-47d4-a16d-0dd5e607f1f4",
+    "source_files":  [
+                         {
+                             "path":  "types.ts",
+                             "sha256":  "638E989C8E2CBA0708C10AF66AE75C953D69332F98A1FB99AB83489EA8D11CD3",
+                             "bytes":  12230
+                         },
+                         {
+                             "path":  "firestore.rules",
+                             "sha256":  "82BE096457FFBEFD92234BFB6E82253A19537F080AD8AC2C2DE57387C841B9DD",
+                             "bytes":  27091
+                         },
+                         {
+                             "path":  "firebase-blueprint.json",
+                             "sha256":  "51CA3AE6A48C7E431F54C3C2DA96C6AA2ADA1D8B65E87B4EDEE87ACC1432A6B9",
+                             "bytes":  17316
+                         },
+                         {
+                             "path":  "security_spec.md",
+                             "sha256":  "8F96EF2C4746BE0DB9D916473911DD5E26DBEF5898100104945EA84DF2F3F6AF",
+                             "bytes":  1732
+                         },
+                         {
+                             "path":  "services/db.ts",
+                             "sha256":  "058CDC288320F271B0B66ADE934EC549B6D1BA63726F40C5614E93C939C40D18",
+                             "bytes":  70484
+                         },
+                         {
+                             "path":  "lib/firebase.ts",
+                             "sha256":  "E9D0D578CB9924DD48962B2E17E1D2F5D21CC2D65ECED129EA37CB60529948DC",
+                             "bytes":  791
+                         },
+                         {
+                             "path":  "utils/exportImportHelpers.ts",
+                             "sha256":  "5B5D22C366861F8BE6749FD4324783E1ED8FB64B980D9E790A8411813F2A7C84",
+                             "bytes":  11259
+                         }
+                     ],
+    "domain_collection_count":  22,
+    "declared_interface_count":  27,
+    "on_snapshot_call_count":  25
+}

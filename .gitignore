@@ -23,3 +23,19 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Segredos e capturas
+.env
+.env.*
+!.env.example
+*service-account*.json
+exports/
+dist-server
+
+# Playwright MCP: perfil, prints e credenciais ficam locais (só o .example vai pro git)
+/.playwright/*
+!/.playwright/secrets.env.example
+/.playwright-mcp/
+
+# Service worker gerado pelo vite-plugin-pwa em dev
+dev-dist/

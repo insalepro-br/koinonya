@@ -503,7 +503,7 @@ const AutomationSettings: React.FC<AutomationSettingsProps> = ({
             <button
               onClick={handleSeedDefaults}
               disabled={isSeeding}
-              className="flex items-center gap-2 px-5 py-3.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-2xl font-black shadow-sm hover:bg-emerald-100 transition-all uppercase tracking-widest text-xs cursor-pointer"
+              className="flex items-center gap-2 px-5 py-3.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-2xl font-black shadow-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all uppercase tracking-widest text-xs cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
               <span>{isSeeding ? 'Carregando...' : 'Carregar Réguas Padrão'}</span>
@@ -643,7 +643,7 @@ const AutomationSettings: React.FC<AutomationSettingsProps> = ({
                             onChange={() => handleToggleRule(rule)}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                          <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:after:bg-slate-800 after:border-slate-300 dark:after:border-slate-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                         </label>
                         <button
                           onClick={() => handleOpenEditRule(rule)}
@@ -688,7 +688,7 @@ const AutomationSettings: React.FC<AutomationSettingsProps> = ({
 
             {rules.length === 0 && (
               <div className="py-20 text-center bg-white dark:bg-slate-800 rounded-[32px] border border-slate-100 dark:border-slate-700 p-8">
-                <Zap className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <Zap className="w-12 h-12 text-slate-300 dark:text-slate-500 mx-auto mb-3" />
                 <h4 className="text-base font-bold text-slate-700 dark:text-white">Nenhum fluxo configurado ainda</h4>
                 <p className="text-xs text-slate-400 mt-1 mb-4">
                   Clique abaixo para carregar as réguas de boas-vindas D+0, D+1, D+3, D+7 e alertas pastorais.
@@ -730,7 +730,7 @@ const AutomationSettings: React.FC<AutomationSettingsProps> = ({
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-3">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Estágio no Pipeline</label>
                     <select
@@ -811,7 +811,7 @@ const AutomationSettings: React.FC<AutomationSettingsProps> = ({
                       type="checkbox"
                       checked={onlyWithPhone}
                       onChange={e => setOnlyWithPhone(e.target.checked)}
-                      className="rounded text-emerald-600 w-4 h-4"
+                      className="rounded text-emerald-600 dark:text-emerald-400 w-4 h-4"
                     />
                     <span>Somente com WhatsApp</span>
                   </label>
@@ -864,7 +864,7 @@ const AutomationSettings: React.FC<AutomationSettingsProps> = ({
                               type="checkbox"
                               checked={isChecked}
                               onChange={() => handleToggleRecipient(member.id)}
-                              className="rounded text-emerald-600 w-4 h-4 shrink-0"
+                              className="rounded text-emerald-600 dark:text-emerald-400 w-4 h-4 shrink-0"
                             />
                             <div className="min-w-0">
                               <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{member.name}</p>
@@ -973,7 +973,7 @@ const AutomationSettings: React.FC<AutomationSettingsProps> = ({
                     type="button"
                     onClick={handleHumanizeBulk}
                     disabled={isHumanizingBulk || !bulkTemplate.trim()}
-                    className="py-3.5 px-5 bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    className="py-3.5 px-5 bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                   >
                     <Sparkles className="w-4 h-4" />
                     <span>{isHumanizingBulk ? 'Aprimorando...' : 'Humanizar com IA'}</span>
@@ -1261,7 +1261,7 @@ const AutomationSettings: React.FC<AutomationSettingsProps> = ({
                   type="button"
                   onClick={handleHumanizeWithAI}
                   disabled={isHumanizing || !broadcastTemplate}
-                  className="flex-1 py-3 px-4 bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="flex-1 py-3 px-4 bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>{isHumanizing ? 'Gerando com IA...' : 'Personalizar com IA'}</span>
@@ -1283,7 +1283,7 @@ const AutomationSettings: React.FC<AutomationSettingsProps> = ({
 
                 <div className="mt-6 bg-slate-800/80 p-5 rounded-2xl border border-slate-700 font-sans text-sm text-slate-100 leading-relaxed shadow-inner whitespace-pre-wrap">
                   {broadcastGeneratedMsg || replaceTags(broadcastTemplate, targetMember) || (
-                    <span className="text-slate-500 italic text-xs">
+                    <span className="text-slate-500 dark:text-slate-400 italic text-xs">
                       Selecione um modelo à esquerda para ver a prévia aqui...
                     </span>
                   )}
@@ -1322,7 +1322,7 @@ const AutomationSettings: React.FC<AutomationSettingsProps> = ({
                   ) : (
                     <button
                       disabled
-                      className="flex-1 py-3.5 bg-slate-800 text-slate-500 rounded-2xl font-bold text-xs uppercase tracking-wider text-center cursor-not-allowed opacity-60"
+                      className="flex-1 py-3.5 bg-slate-800 text-slate-500 dark:text-slate-400 rounded-2xl font-bold text-xs uppercase tracking-wider text-center cursor-not-allowed opacity-60"
                     >
                       Sem Telefone Cadastrado
                     </button>
@@ -1504,7 +1504,7 @@ const AutomationSettings: React.FC<AutomationSettingsProps> = ({
 
       {/* Modal: Criar / Editar Fluxo de Automação */}
       {isRuleModalOpen && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 !mt-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-800 max-w-lg w-full rounded-[36px] p-8 shadow-2xl border border-slate-100 dark:border-slate-700 animate-in zoom-in-95">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -1592,7 +1592,7 @@ const AutomationSettings: React.FC<AutomationSettingsProps> = ({
                   id="ai-toggle"
                   checked={ruleFormData.use_ai_humanization}
                   onChange={e => setRuleFormData({ ...ruleFormData, use_ai_humanization: e.target.checked })}
-                  className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4"
+                  className="rounded text-indigo-600 dark:text-indigo-400 focus:ring-indigo-500 w-4 h-4"
                 />
                 <label htmlFor="ai-toggle" className="text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
                   Humanizar automaticamente com IA ao sugerir mensagem
@@ -1603,7 +1603,7 @@ const AutomationSettings: React.FC<AutomationSettingsProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsRuleModalOpen(false)}
-                  className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-bold text-xs uppercase tracking-wider rounded-2xl cursor-pointer"
+                  className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs uppercase tracking-wider rounded-2xl cursor-pointer"
                 >
                   Cancelar
                 </button>

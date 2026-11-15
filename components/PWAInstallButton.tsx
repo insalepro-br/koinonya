@@ -60,7 +60,7 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ variant = 'h
       </button>
 
       {showGuideModal && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 !mt-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-100 dark:border-slate-700 space-y-5">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -88,11 +88,11 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ variant = 'h
             {isIOS ? (
               <div className="space-y-3 text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
                 <p className="flex items-center gap-2 font-bold text-slate-800 dark:text-white">
-                  <Share className="w-4 h-4 text-indigo-600 shrink-0" />
+                  <Share className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
                   1. Toque no botão Compartilhar na barra do Safari.
                 </p>
                 <p className="flex items-center gap-2 font-bold text-slate-800 dark:text-white">
-                  <PlusSquare className="w-4 h-4 text-indigo-600 shrink-0" />
+                  <PlusSquare className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
                   2. Role e toque em "Adicionar à Tela de Início".
                 </p>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">

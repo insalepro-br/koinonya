@@ -75,7 +75,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const translatedRole = ROLE_TRANSLATIONS[String(user.role)] || user.role || 'Membro';
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 !mt-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-[36px] shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden animate-in zoom-in-95 duration-200">
         
         {/* Header com Avatar Preview */}
@@ -121,14 +121,14 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
         <form onSubmit={handleSubmit} className="p-7 space-y-5">
           {errorMsg && (
             <div className="p-3 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 rounded-2xl flex items-center gap-2 text-rose-700 dark:text-rose-300 text-xs font-bold animate-in fade-in">
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           {savedSuccess && (
             <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-2xl flex items-center gap-2 text-emerald-700 dark:text-emerald-300 text-xs font-bold animate-in fade-in">
-              <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>Perfil atualizado com sucesso! Fechando...</span>
             </div>
           )}

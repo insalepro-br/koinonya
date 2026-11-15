@@ -256,15 +256,15 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
           <h2 className="text-3xl font-black text-slate-800 dark:text-white tracking-tighter uppercase">
             Gestão Financeira & Campanhas
           </h2>
-          <p className="text-slate-500 font-medium text-sm mt-1">
+          <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">
             Controle de dízimos, ofertas, despesas/saídas operacionais, campanhas e prestação de contas pastoral.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => setIsCampaignModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-3.5 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900 rounded-2xl font-black shadow-xs hover:bg-indigo-50 dark:hover:bg-slate-700 transition-all text-xs uppercase tracking-wider cursor-pointer"
+            className="flex items-center gap-2 px-5 py-3.5 whitespace-nowrap bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900 rounded-2xl font-black shadow-xs hover:bg-indigo-50 dark:hover:bg-slate-700 transition-all text-xs uppercase tracking-wider cursor-pointer"
           >
             <Target className="w-4 h-4" />
             <span>Nova Campanha</span>
@@ -282,7 +282,7 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
               }));
               setIsTxModalOpen(true);
             }}
-            className="flex items-center gap-2 px-5 py-3.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 border border-rose-200 dark:border-rose-900 rounded-2xl font-black shadow-xs hover:bg-rose-100 transition-all text-xs uppercase tracking-wider cursor-pointer"
+            className="flex items-center gap-2 px-5 py-3.5 whitespace-nowrap bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 border border-rose-200 dark:border-rose-900 rounded-2xl font-black shadow-xs hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-all text-xs uppercase tracking-wider cursor-pointer"
           >
             <TrendingDown className="w-4 h-4" />
             <span>Registrar Saída</span>
@@ -300,7 +300,7 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
               }));
               setIsTxModalOpen(true);
             }}
-            className="flex items-center gap-2 px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black shadow-lg shadow-emerald-500/20 transition-all text-xs uppercase tracking-wider cursor-pointer active:scale-95"
+            className="flex items-center gap-2 px-6 py-3.5 whitespace-nowrap bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black shadow-lg shadow-emerald-500/20 transition-all text-xs uppercase tracking-wider cursor-pointer active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>Lançar Entrada</span>
@@ -314,14 +314,14 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
         <div className="bg-white dark:bg-slate-800 p-6 rounded-[32px] shadow-xs border border-slate-100 dark:border-slate-700 flex items-center justify-between">
           <div>
             <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Saldo em Caixa</p>
-            <h3 className={`text-3xl font-black mt-1 ${netBalance >= 0 ? 'text-slate-800 dark:text-white' : 'text-rose-600'}`}>
+            <h3 className={`text-xl 2xl:text-3xl font-black whitespace-nowrap tabular-nums mt-1 ${netBalance >= 0 ? 'text-slate-800 dark:text-white' : 'text-rose-600 dark:text-rose-400'}`}>
               R$ {netBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </h3>
             <p className="text-[10px] text-slate-400 font-bold mt-1">
               Entradas - Saídas acumuladas
             </p>
           </div>
-          <div className={`p-4 rounded-2xl ${netBalance >= 0 ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+          <div className={`p-4 rounded-2xl ${netBalance >= 0 ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400'}`}>
             <Wallet className="w-7 h-7" />
           </div>
         </div>
@@ -330,14 +330,14 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
         <div className="bg-white dark:bg-slate-800 p-6 rounded-[32px] shadow-xs border border-slate-100 dark:border-slate-700 flex items-center justify-between">
           <div>
             <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Total Entradas</p>
-            <h3 className="text-3xl font-black text-emerald-600 mt-1">
+            <h3 className="text-xl 2xl:text-3xl font-black whitespace-nowrap tabular-nums text-emerald-600 dark:text-emerald-400 mt-1">
               + R$ {totalInflows.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </h3>
             <p className="text-[10px] text-slate-400 font-bold mt-1">
               Dízimos: R$ {totalTithes.toLocaleString('pt-BR', { minimumFractionDigits: 0 })} • Ofertas: R$ {totalOfferings.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
             </p>
           </div>
-          <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600">
+          <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
             <ArrowUpCircle className="w-7 h-7" />
           </div>
         </div>
@@ -346,14 +346,14 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
         <div className="bg-white dark:bg-slate-800 p-6 rounded-[32px] shadow-xs border border-slate-100 dark:border-slate-700 flex items-center justify-between">
           <div>
             <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Total Saídas / Despesas</p>
-            <h3 className="text-3xl font-black text-rose-600 mt-1">
+            <h3 className="text-xl 2xl:text-3xl font-black whitespace-nowrap tabular-nums text-rose-600 dark:text-rose-400 mt-1">
               - R$ {totalExpenses.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </h3>
             <p className="text-[10px] text-slate-400 font-bold mt-1">
               {transactions.filter(t => t.type === 'EXPENSE').length} pagamentos efetuados
             </p>
           </div>
-          <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600">
+          <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400">
             <ArrowDownCircle className="w-7 h-7" />
           </div>
         </div>
@@ -362,14 +362,14 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
         <div className="bg-white dark:bg-slate-800 p-6 rounded-[32px] shadow-xs border border-slate-100 dark:border-slate-700 flex items-center justify-between">
           <div>
             <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Campanhas Especiais</p>
-            <h3 className="text-3xl font-black text-amber-600 mt-1">
+            <h3 className="text-xl 2xl:text-3xl font-black whitespace-nowrap tabular-nums text-amber-600 dark:text-amber-400 mt-1">
               R$ {totalCampaigns.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </h3>
             <p className="text-[10px] text-slate-400 font-bold mt-1">
               {campaigns.length} campanhas de expansão
             </p>
           </div>
-          <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600">
+          <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
             <Target className="w-7 h-7" />
           </div>
         </div>
@@ -382,7 +382,7 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
           className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-xs uppercase tracking-wider transition-all cursor-pointer ${
             activeTab === 'transactions'
               ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md'
-              : 'bg-white dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700'
+              : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700'
           }`}
         >
           <FileText className="w-4 h-4" />
@@ -394,7 +394,7 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
           className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-xs uppercase tracking-wider transition-all cursor-pointer ${
             activeTab === 'campaigns'
               ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md'
-              : 'bg-white dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700'
+              : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700'
           }`}
         >
           <Target className="w-4 h-4" />
@@ -406,7 +406,7 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
           className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-black text-xs uppercase tracking-wider transition-all cursor-pointer ${
             activeTab === 'reports'
               ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md'
-              : 'bg-white dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700'
+              : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700'
           }`}
         >
           <PieChartIcon className="w-4 h-4" />
@@ -420,7 +420,7 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
           {/* Search and filters */}
           <div className="bg-white dark:bg-slate-800 p-3 rounded-[28px] border border-slate-100 dark:border-slate-700 shadow-xs flex flex-col md:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 dark:text-slate-500" />
               <input
                 type="text"
                 placeholder="Buscar por descrição, membro ou categoria..."
@@ -466,13 +466,13 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
 
                       return (
                         <tr key={tx.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                          <td className="px-6 py-4 text-slate-500 font-semibold whitespace-nowrap">
+                          <td className="px-6 py-4 text-slate-500 dark:text-slate-400 font-semibold whitespace-nowrap">
                             {new Date(tx.date).toLocaleDateString('pt-BR')}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
                               isExpense
-                                ? 'bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200/50'
+                                ? 'bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800'
                                 : tx.type === 'TITHE' 
                                 ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300' 
                                 : tx.type === 'OFFERING'
@@ -481,12 +481,12 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
                             }`}>
                               {isExpense ? (
                                 <>
-                                  <ArrowDownRight className="w-3 h-3 text-rose-600" />
+                                  <ArrowDownRight className="w-3 h-3 text-rose-600 dark:text-rose-400" />
                                   <span>Saída / Despesa</span>
                                 </>
                               ) : (
                                 <>
-                                  <ArrowUpRight className="w-3 h-3 text-emerald-600" />
+                                  <ArrowUpRight className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                                   <span>{tx.type === 'TITHE' ? 'Dízimo' : tx.type === 'OFFERING' ? 'Oferta' : 'Campanha'}</span>
                                 </>
                               )}
@@ -507,7 +507,7 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
                             </span>
                           </td>
                           <td className={`px-6 py-4 text-right font-black text-sm whitespace-nowrap ${
-                            isExpense ? 'text-rose-600' : 'text-emerald-600'
+                            isExpense ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
                           }`}>
                             {isExpense ? '- ' : '+ '}
                             R$ {Number(tx.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -577,7 +577,7 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
                   <div className="flex items-baseline justify-between">
                     <div>
                       <p className="text-[10px] font-black uppercase text-slate-400">Arrecadado</p>
-                      <p className="text-2xl font-black text-emerald-600">
+                      <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
                         R$ {(camp.raised_amount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </p>
                     </div>
@@ -695,13 +695,13 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl text-center">
                     <p className="text-[10px] font-black uppercase text-slate-400">Total Dízimos</p>
-                    <p className="text-sm font-bold text-indigo-600 mt-0.5">
+                    <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">
                       R$ {totalTithes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                   <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl text-center">
                     <p className="text-[10px] font-black uppercase text-slate-400">Total Ofertas/Campanhas</p>
-                    <p className="text-sm font-bold text-blue-600 mt-0.5">
+                    <p className="text-sm font-bold text-blue-600 dark:text-blue-400 mt-0.5">
                       R$ {(totalOfferings + totalCampaigns).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
@@ -718,7 +718,7 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
 
       {/* MODAL: NOVO LANÇAMENTO (ENTRADA OU SAÍDA) */}
       {isTxModalOpen && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 !mt-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-[36px] shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700">
             <div className={`p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center ${
               txMode === 'INCOME' ? 'bg-emerald-50/60 dark:bg-emerald-950/20' : 'bg-rose-50/60 dark:bg-rose-950/20'
@@ -736,7 +736,7 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
                   </p>
                 </div>
               </div>
-              <button onClick={() => setIsTxModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 cursor-pointer">
+              <button onClick={() => setIsTxModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -753,7 +753,7 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
                   className={`flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     txMode === 'INCOME' 
                       ? 'bg-emerald-600 text-white shadow-sm' 
-                      : 'text-slate-500 hover:text-slate-900'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   <ArrowUpCircle className="w-4 h-4" />
@@ -768,7 +768,7 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
                   className={`flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     txMode === 'EXPENSE' 
                       ? 'bg-rose-600 text-white shadow-sm' 
-                      : 'text-slate-500 hover:text-slate-900'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   <ArrowDownCircle className="w-4 h-4" />
@@ -907,7 +907,7 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
 
       {/* MODAL: NOVA CAMPANHA */}
       {isCampaignModalOpen && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 !mt-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-[36px] shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700">
             <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-indigo-50/50 dark:bg-indigo-950/20">
               <div className="flex items-center gap-3">
@@ -916,7 +916,7 @@ const FinancialModule: React.FC<FinancialModuleProps> = ({
                 </div>
                 <h3 className="text-xl font-black text-slate-800 dark:text-white">Nova Campanha</h3>
               </div>
-              <button onClick={() => setIsCampaignModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 cursor-pointer">
+              <button onClick={() => setIsCampaignModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
